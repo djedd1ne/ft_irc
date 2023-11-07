@@ -1,7 +1,8 @@
+
 #include "../inc/Input.hpp"
 #include <string.h>
-#include <arpa/inet.h>
 #include <stdio.h>
+#include <netinet/in.h>
 
 // Constructors
 
