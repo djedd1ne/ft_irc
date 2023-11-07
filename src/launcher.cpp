@@ -22,6 +22,7 @@ int main(int argc, char **argv)
 
 	int status;
 
+	(void)status;
 	status = getaddrinfo(ip.c_str(), port.c_str(), NULL, &test);
 	// first arg in socket creation;
 	addr->sa_family = AF_INET;
