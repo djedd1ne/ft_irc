@@ -22,7 +22,8 @@ class Server
 		int create_socket(void);	
 		void bind_socket(int , addrinfo **);
 		void start_listening(int );
-		void accept_conn(int , addrinfo **);
+		int accept_conn(int , addrinfo **);
+		void read_messages(int socket);
 
 };
 

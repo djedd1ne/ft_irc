@@ -56,7 +56,7 @@ void Server::start_listening(int socket)
     }
 }
 
-void Server::accept_conn(int socket, addrinfo **test)
+int Server::accept_conn(int socket, addrinfo **test)
 {
 	int clientSocket = accept(socket, (*test)->ai_addr, &(*test)->ai_addrlen);
 
@@ -70,4 +70,18 @@ void Server::accept_conn(int socket, addrinfo **test)
 	{
 		std::cerr << "ACCEPTED :: "  << std::endl;
 	}
+	return (clientSocket);
+}
+
+void Server::read_messages(int socket)
+{
+	char *buffer;
+	int len;
+
+	buffer = (char *)malloc(sizeof(char) * 10);
+	len = recv(socket, buffer, 10, 0);
+	printf("buffer: %s\n", buffer);
+	printf("len: %d\n", len);
+	buffer[9] = 0;
+	write(1, buffer, 10);
 }

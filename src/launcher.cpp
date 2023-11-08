@@ -38,8 +38,15 @@ int main(int argc, char **argv)
 
     std::cout << "Server is listening on port " << port_s << std::endl;
 
+	int clientsocket;
+
     while (1)
 	{
-		server.accept_conn(socket, &test);
+		clientsocket = server.accept_conn(socket, &test);
+		printf("read msg\n");
+		while (1)
+		{
+			server.read_messages(clientsocket);
+		}
 	}
 }
