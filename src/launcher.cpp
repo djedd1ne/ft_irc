@@ -14,31 +14,13 @@
 
 int main(int argc, char **argv)
 {
- /*
-	sockaddr_in		in_addr;
-	sockaddr		*addr;
-	addrinfo		*test;
-	Input			input(argc, argv);
-	std::string		ip("127.0.0.1");
-	std::string		port("80");
-
-	addr = (sockaddr*)malloc(sizeof(sockaddr));
-
+	struct addrinfo		*test;
 	int status;
-
 	(void)status;
-	status = getaddrinfo(ip.c_str(), port.c_str(), NULL, &test);
-	// first arg in socket creation;
-	addr->sa_family = AF_INET;
+	std::string		ip_s("127.0.0.1");
+	std::string		port_s("8080");
+	status = getaddrinfo(ip_s.c_str(), port_s.c_str(), NULL, &test);
 
-	if (argc == 3)	
-	{
-		input.parse(in_addr);
-		//Server.run(argv);
-	}
-	else
-		write(1,"test",4);
-		//Print.usage();
 	printf("ai_flags : %d\n", test->ai_flags);
 	printf("ai_family : %d\n", test->ai_family);
 	printf("ai_socktype : %d\n", test->ai_socktype);
@@ -61,6 +43,25 @@ int main(int argc, char **argv)
 	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[12]);
 	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[13]);
 	printf("sockaddr.2 len  : %lu\n", sizeof(test->ai_addr->sa_data));
+ /*
+	sockaddr_in		in_addr;
+	sockaddr		*addr;
+	Input			input(argc, argv);
+
+	addr = (sockaddr*)malloc(sizeof(sockaddr));
+
+
+	// first arg in socket creation;
+	addr->sa_family = AF_INET;
+
+	if (argc == 3)	
+	{
+		input.parse(in_addr);
+		//Server.run(argv);
+	}
+	else
+		write(1,"test",4);
+		//Print.usage();
 	return (1);
 	*/
 
@@ -84,7 +85,7 @@ int main(int argc, char **argv)
     serv_add.sin_addr.s_addr = inet_addr("127.0.0.1");
     serv_add.sin_port = htons(port);
 
-	server.bind_socket(socket, serv_add);
+	server.bind_socket(socket, serv_add, &test);
 	server.start_listening(socket);
 
     std::cout << "Server is listening on port " << port << std::endl;
