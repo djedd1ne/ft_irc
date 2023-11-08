@@ -3,10 +3,12 @@ CC = c++
 FLAGS = -std=c++98 -Wall -Werror -Wextra
 
 SRC = src/launcher.cpp \
-	  src/Input.cpp
+	  src/Input.cpp \
+	  src/Server.cpp
 
 OBJ = src/launcher.o \
-	  src/Input.o
+	  src/Input.o \
+	  src/Server.o
 
 all:$(NAME)
 
