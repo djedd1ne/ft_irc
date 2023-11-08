@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sys/types.h>
 #include <netdb.h>
+#include <stdio.h>
 
 class Server
 {
@@ -19,9 +20,9 @@ class Server
 		Server operator= (const Server&);
 		~Server(void);
 		int create_socket(void);	
-		void bind_socket(int socket, addrinfo **);
+		void bind_socket(int , addrinfo **);
 		void start_listening(int );
-		void accept_conn(int );
+		void accept_conn(int , addrinfo **);
 
 };
 

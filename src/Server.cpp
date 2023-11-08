@@ -56,9 +56,9 @@ void Server::start_listening(int socket)
     }
 }
 
-void Server::accept_conn(int socket)
+void Server::accept_conn(int socket, addrinfo **test)
 {
-	int clientSocket = accept(socket, nullptr, nullptr);
+	int clientSocket = accept(socket, (*test)->ai_addr, &(*test)->ai_addrlen);
 
 	if (clientSocket == -1) 
 	{

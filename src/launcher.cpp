@@ -40,6 +40,6 @@ int main(int argc, char **argv)
 
     while (1)
 	{
-		server.accept_conn(socket);
+		server.accept_conn(socket, &test);
 	}
 }
