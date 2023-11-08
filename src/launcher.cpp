@@ -1,5 +1,6 @@
 
 #include "../inc/Input.hpp"
+#include "../inc/Server.hpp"
 #include <cstdlib>
 #include <string>
 #include <unistd.h>
@@ -8,9 +9,12 @@
 #include <sys/types.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include <iostream>
 
 int main(int argc, char **argv)
 {
+ /*
 	sockaddr_in		in_addr;
 	sockaddr		*addr;
 	addrinfo		*test;
@@ -58,4 +62,36 @@ int main(int argc, char **argv)
 	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[13]);
 	printf("sockaddr.2 len  : %lu\n", sizeof(test->ai_addr->sa_data));
 	return (1);
+	*/
+
+	
+    if (argc != 3) {
+        std::cerr << "Usage: ./server <port> <pass>" << std::endl;
+        return 1;
+    }
+
+    int port = atoi(argv[1]);
+    std::string password = argv[2];
+	Server server;
+	int socket;
+
+	
+	socket = server.create_socket();
+
+    struct sockaddr_in serv_add;
+    memset(&serv_add, 0, sizeof(serv_add));
+    serv_add.sin_family = AF_INET;
+    serv_add.sin_addr.s_addr = inet_addr("127.0.0.1");
+    serv_add.sin_port = htons(port);
+
+	server.bind_socket(socket, serv_add);
+	server.start_listening(socket);
+
+    std::cout << "Server is listening on port " << port << std::endl;
+
+
+    while (1)
+	{
+		server.accept_conn(socket);
+	}
 }
