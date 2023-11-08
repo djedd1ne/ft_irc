@@ -22,7 +22,6 @@ int main(int argc, char **argv)
 	int socket;
 	int status;
 	(void)status;
-    int port = atoi(argv[1]);
 	std::string port_s(argv[1]);
     std::string password = argv[2];
 	std::string	ip_s("127.0.0.1");
@@ -37,7 +36,7 @@ int main(int argc, char **argv)
 	server.bind_socket(socket, &test);
 	server.start_listening(socket);
 
-    std::cout << "Server is listening on port " << port << std::endl;
+    std::cout << "Server is listening on port " << port_s << std::endl;
 
     while (1)
 	{
