@@ -14,6 +14,9 @@
 
 int main(int argc, char **argv)
 {
+	//do memory management before exits in Server (if exists);
+	//change perror to trow exceptions;
+
 	struct addrinfo		*test;
 	Server server;
 	int socket;
