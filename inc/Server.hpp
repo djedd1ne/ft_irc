@@ -10,8 +10,6 @@
 #include <sys/types.h>
 #include <netdb.h>
 
-struct addrinfo;
-
 class Server
 {
 	private:
@@ -21,7 +19,7 @@ class Server
 		Server operator= (const Server&);
 		~Server(void);
 		int create_socket(void);	
-		void bind_socket(int socket, sockaddr_in &, struct addrinfo **);
+		void bind_socket(int socket, addrinfo **);
 		void start_listening(int );
 		void accept_conn(int );
 

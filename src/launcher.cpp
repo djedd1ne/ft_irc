@@ -15,81 +15,26 @@
 int main(int argc, char **argv)
 {
 	struct addrinfo		*test;
+	Server server;
+	int socket;
 	int status;
 	(void)status;
-	std::string		ip_s("127.0.0.1");
-	std::string		port_s("8080");
-	status = getaddrinfo(ip_s.c_str(), port_s.c_str(), NULL, &test);
-
-	printf("ai_flags : %d\n", test->ai_flags);
-	printf("ai_family : %d\n", test->ai_family);
-	printf("ai_socktype : %d\n", test->ai_socktype);
-	printf("ai_protocol : %d\n", test->ai_protocol);
-	printf("canoname : %s\n", test->ai_canonname);
-	printf("socklen : %u\n", test->ai_addrlen);
-	printf("sockaddr.1  : %d\n", test->ai_addr->sa_family);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[0]);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[1]);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[2]);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[3]);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[4]);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[5]);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[6]);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[7]);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[8]);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[9]);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[10]);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[11]);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[12]);
-	printf("sockaddr.2  : %d\n", test->ai_addr->sa_data[13]);
-	printf("sockaddr.2 len  : %lu\n", sizeof(test->ai_addr->sa_data));
- /*
-	sockaddr_in		in_addr;
-	sockaddr		*addr;
-	Input			input(argc, argv);
-
-	addr = (sockaddr*)malloc(sizeof(sockaddr));
-
-
-	// first arg in socket creation;
-	addr->sa_family = AF_INET;
-
-	if (argc == 3)	
-	{
-		input.parse(in_addr);
-		//Server.run(argv);
-	}
-	else
-		write(1,"test",4);
-		//Print.usage();
-	return (1);
-	*/
-
+    int port = atoi(argv[1]);
+	std::string port_s(argv[1]);
+    std::string password = argv[2];
+	std::string	ip_s("127.0.0.1");
 	
     if (argc != 3) {
         std::cerr << "Usage: ./server <port> <pass>" << std::endl;
         return 1;
     }
 
-    int port = atoi(argv[1]);
-    std::string password = argv[2];
-	Server server;
-	int socket;
-
-	
+	status = getaddrinfo(ip_s.c_str(), port_s.c_str(), NULL, &test);
 	socket = server.create_socket();
-
-    struct sockaddr_in serv_add;
-    memset(&serv_add, 0, sizeof(serv_add));
-    serv_add.sin_family = AF_INET;
-    serv_add.sin_addr.s_addr = inet_addr("127.0.0.1");
-    serv_add.sin_port = htons(port);
-
-	server.bind_socket(socket, serv_add, &test);
+	server.bind_socket(socket, &test);
 	server.start_listening(socket);
 
     std::cout << "Server is listening on port " << port << std::endl;
-
 
     while (1)
 	{

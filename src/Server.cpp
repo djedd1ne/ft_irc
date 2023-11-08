@@ -36,10 +36,8 @@ int	Server::create_socket(void)
 	return (socket_fd);
 }
 
-void Server::bind_socket(int socket, sockaddr_in &serv_addr, struct addrinfo **test)
+void Server::bind_socket(int socket, addrinfo **test)
 {
-
-	(void)serv_addr;
     if (bind(socket, (*test)->ai_addr, (*test)->ai_addrlen))
 	{
         perror("Failed to bind socket");
