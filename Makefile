@@ -4,11 +4,13 @@ FLAGS = -std=c++98 -Wall -Werror -Wextra
 
 SRC = src/launcher.cpp \
 	  src/Input.cpp \
-	  src/Server.cpp
+	  src/Server.cpp \
+	  src/Client.cpp
 
 OBJ = src/launcher.o \
 	  src/Input.o \
-	  src/Server.o
+	  src/Server.o \
+	  src/Client.o
 
 all:$(NAME)
 
