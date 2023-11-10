@@ -1,6 +1,7 @@
 
 #include "../inc/Input.hpp"
 #include "../inc/Server.hpp"
+#include "../inc/Client.hpp"
 #include <cstdlib>
 #include <string>
 #include <unistd.h>
@@ -11,33 +12,36 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <iostream>
+#include <sys/time.h>
+#include <vector>
+#include <poll.h>
 
 int main(int argc, char **argv)
 {
-	struct addrinfo		*test;
-	Server server;
-	int socket;
-	int status;
-	(void)status;
-    int port = atoi(argv[1]);
-	std::string port_s(argv[1]);
-    std::string password = argv[2];
-	std::string	ip_s("127.0.0.1");
-	
-    if (argc != 3) {
-        std::cerr << "Usage: ./server <port> <pass>" << std::endl;
-        return 1;
-    }
+	//do memory management before exits in Server (if exists);
+	//change perror to trow exceptions;
 
-	status = getaddrinfo(ip_s.c_str(), port_s.c_str(), NULL, &test);
+	int			socket;
+	Input		input(argc, argv);
+	Server		server;
+	addrinfo	*test;
+	pollfd	conn;
+
+	(void)conn;
+	input.parseInput();
+	input.getAddrInfoStruct(&test);
+
 	socket = server.create_socket();
 	server.bind_socket(socket, &test);
-	server.start_listening(socket);
 
-    std::cout << "Server is listening on port " << port << std::endl;
+    std::cout << "Server is listening on port " << input.getPort() << std::endl;
+
+	int clientsocket;
 
     while (1)
 	{
-		server.accept_conn(socket);
+		server.start_listening(socket);
+		clientsocket = server.accept_conn(socket, &test);
+		server.read_messages(clientsocket);
 	}
 }

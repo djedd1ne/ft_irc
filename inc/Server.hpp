@@ -9,6 +9,9 @@
 #include <iostream>
 #include <sys/types.h>
 #include <netdb.h>
+#include <stdio.h>
+
+#define MY_DOMAIN "127.0.0.1"
 
 class Server
 {
@@ -19,9 +22,10 @@ class Server
 		Server operator= (const Server&);
 		~Server(void);
 		int create_socket(void);	
-		void bind_socket(int socket, addrinfo **);
+		void bind_socket(int , addrinfo **);
 		void start_listening(int );
-		void accept_conn(int );
+		int accept_conn(int , addrinfo **);
+		void read_messages(int socket);
 
 };
 

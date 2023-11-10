@@ -1,6 +1,5 @@
 
 #include "../inc/Input.hpp"
-#include <string.h>
 #include <stdio.h>
 #include <netinet/in.h>
 
@@ -8,44 +7,68 @@
 
 Input::Input(int argc, char **argv)
 {
-	char *temp;
-
 	if (argc == 3)
 	{
-		this->password = strdup(argv[2]);
-		temp = strdup(argv[1]);
-		this->port = atoi(temp);
-		free(temp);
+		this->port = argv[1];
+		this->password = argv[2];
 	}
 	else 
-		this->password = NULL;
+	{
+        std::cerr << "Usage: ./server <port> <pass>" << std::endl;
+		exit(1);
+	}
 }
 
 Input::Input(const Input &src)
 {
+	this->port = src.port;	
 	this->password = src.password;	
 }
 
 Input Input::operator= (const Input &src)
 {
-	this->password = src.password;	
 	this->port = src.port;	
+	this->password = src.password;	
 	return (*this);
 }
 
 Input::~Input(void)
 {
-	if (password != NULL)
-		free(this->password);
 }
 
 // Functions
 
-void Input::parse(sockaddr_in &addr)
+void Input::parseInput(void)
 {
-	addr.sin_port = htons(port);
+	int portNo;
 
-	printf("port: %d\n", port);
-	printf("converted port: %d\n", addr.sin_port);
-	printf("pass: %s\n", password);
+	for (int i = 0; i < (int)port.size(); i++)
+	{
+		if (!isdigit(port[i]))
+		{
+			std::cerr << "Port not specified correctly!" << std::endl;
+			exit(1);
+		}
+	}
+	portNo = atoi(port.c_str());
+	if (portNo < 1024 || portNo > 9000)
+	{
+		std::cerr << "Port our of range, pick between 1024 and 9000!" << std::endl;
+		exit(1);
+	}
+	if (this->password.size() > 13)
+	{
+		std::cerr << "Password exceedes a total number of 13 characters!" << std::endl;
+		exit(1);
+	}
+}
+
+void Input::getAddrInfoStruct(addrinfo **addr)
+{
+	getaddrinfo(MY_DOMAIN, this->port.c_str(), NULL, addr);
+}
+
+std::string Input::getPort(void)
+{
+	return (this->port);
 }
