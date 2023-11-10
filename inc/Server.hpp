@@ -11,7 +11,7 @@
 #include <netdb.h>
 #include <stdio.h>
 
-#define DOMAIN "127.0.0.1"
+#define MY_DOMAIN "127.0.0.1"
 
 class Server
 {

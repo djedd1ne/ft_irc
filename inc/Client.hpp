@@ -13,6 +13,7 @@ class Client
 		Client operator= (const Client&);
 		~Client(void);
 		void setSocket(int &sock);
+		int getSocket(void);
 };
 
 #endif

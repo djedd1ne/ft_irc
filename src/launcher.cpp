@@ -12,7 +12,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <iostream>
+#include <sys/time.h>
 #include <vector>
+#include <poll.h>
 
 int main(int argc, char **argv)
 {
@@ -23,27 +25,23 @@ int main(int argc, char **argv)
 	Input		input(argc, argv);
 	Server		server;
 	addrinfo	*test;
+	pollfd	conn;
 
-	
+	(void)conn;
 	input.parseInput();
 	input.getAddrInfoStruct(&test);
 
 	socket = server.create_socket();
 	server.bind_socket(socket, &test);
-	server.start_listening(socket);
 
     std::cout << "Server is listening on port " << input.getPort() << std::endl;
 
 	int clientsocket;
-	std::vector <Client*> clients;
 
-	(void)clients;
     while (1)
 	{
+		server.start_listening(socket);
 		clientsocket = server.accept_conn(socket, &test);
-		Client new_client(clientsocket);
-		clients.push_back(&new_client);
-		printf("read msg\n");
 		server.read_messages(clientsocket);
 	}
 }

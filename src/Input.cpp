@@ -65,7 +65,7 @@ void Input::parseInput(void)
 
 void Input::getAddrInfoStruct(addrinfo **addr)
 {
-	getaddrinfo(DOMAIN, this->port.c_str(), NULL, addr);
+	getaddrinfo(MY_DOMAIN, this->port.c_str(), NULL, addr);
 }
 
 std::string Input::getPort(void)

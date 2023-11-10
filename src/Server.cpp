@@ -68,7 +68,7 @@ int Server::accept_conn(int socket, addrinfo **test)
     }
 	else
 	{
-		std::cerr << "ACCEPTED :: "  << std::endl;
+		std::cout << "ACCEPTED :: "  << std::endl;
 	}
 	return (clientSocket);
 }

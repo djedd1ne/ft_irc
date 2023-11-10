@@ -8,7 +8,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-#define DOMAIN "127.0.0.1"
+#define MY_DOMAIN "127.0.0.1"
 
 class Input
 {

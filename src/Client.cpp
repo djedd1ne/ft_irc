@@ -33,3 +33,8 @@ void Client::setSocket(int &sock)
 {
 	socket = sock;
 }
+
+int Client::getSocket(void)
+{
+	return (this->socket);
+}
