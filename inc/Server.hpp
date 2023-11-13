@@ -11,7 +11,7 @@
 #include <netdb.h>
 #include <stdio.h>
 
-#define MY_DOMAIN "127.0.0.1"
+#define MY_DOMAIN "0.0.0.0"
 
 class Server
 {
@@ -25,7 +25,7 @@ class Server
 		void bind_socket(int , addrinfo **);
 		void start_listening(int );
 		int accept_conn(int , addrinfo **);
-		void read_messages(int socket);
+		int read_messages(int socket);
 		void send_messages(int socket);
 
 };

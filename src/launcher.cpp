@@ -39,33 +39,44 @@ int main(int argc, char **argv)
 
     std::cout << "Server is listening on port " << input.getPort() << std::endl;
 
-	int clientsocket;
 	server.start_listening(socket);
 
+	int pollc;
 	conn[0].fd = socket;
 	conn[0].events = POLLIN;
 	existingConns = 1;
 	while(1)
 	{
-		poll(conn, CONNECTIONS, 200);
+		pollc = poll(conn, existingConns, -1);
+		(void)pollc;
 		//iterate over conns
 		for (int i = 0; i < existingConns; i++)
 		{
+			// if file descriptor is ready to read
 			if (conn[i].revents & POLLIN)
 			{
+				//if server is ready to read, handle new conn
 				if (conn[i].fd == socket)
 				{
-					clientsocket = server.accept_conn(socket, &test);
-					conn[i].fd = clientsocket;
-					conn[i].events = POLLIN;
+					conn[existingConns].fd = server.accept_conn(socket, &test);
+					conn[existingConns].events = POLLIN;
 					existingConns++;
+					
 					std::cout << "New connection accepted: "<<std::endl;
 				}
+				//if not listener then its just a regular client
 				else
 				{
-					server.read_messages(conn[i].fd);
+					if (server.read_messages(conn[i].fd) == 0)
+					{
+						printf("close it \n");
+						close(conn[i].fd);
+						conn[i] = conn[existingConns - 1];
+						existingConns--;
+					}
+					else
+						server.send_messages(conn[i].fd);
 				}
-				server.send_messages(conn[i].fd);
 			}
 		}
 	}

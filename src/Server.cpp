@@ -1,5 +1,6 @@
 
 #include "../inc/Server.hpp"
+#include <cstring>
 
 // Constructors
 
@@ -73,24 +74,31 @@ int Server::accept_conn(int socket, addrinfo **test)
 	return (clientSocket);
 }
 
-void Server::read_messages(int socket)
+int Server::read_messages(int socket)
 {
 	char *buffer;
 	int len;
 
 	buffer = (char *)malloc(sizeof(char) * 100);
 	len = recv(socket, buffer, 100, 0);
-	printf("buffer: %s\n", buffer);
-	printf("len: %d\n", len);
+	(void)len;
 	buffer[100] = 0;
 	write(1, buffer, 100);
+	if (strncmp(buffer, "PING", 4) == 0)
+	{
+		printf("sending reply\n");
+		int len;
+
+		len = send(socket, "PONG\n", strlen("PONG\n"), 0);
+		(void)len;
+	}
+	return (len);
 }
 
 void Server::send_messages(int socket)
 {
 	int len;
 
-	len = send(socket, "001: kifach \n", 13, 0);
+	len = send(socket, ":127.0.0.1 001 ssergiu: Welcome to the server, ssergiu! \n", strlen(":127.0.0.1 001 ssergiu: Welcome to the server, ssergiu! \n"), 0);
 	(void)len;
-	printf("send 001\n");
 }
