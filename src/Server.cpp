@@ -78,10 +78,19 @@ void Server::read_messages(int socket)
 	char *buffer;
 	int len;
 
-	buffer = (char *)malloc(sizeof(char) * 10);
-	len = recv(socket, buffer, 10, 0);
+	buffer = (char *)malloc(sizeof(char) * 100);
+	len = recv(socket, buffer, 100, 0);
 	printf("buffer: %s\n", buffer);
 	printf("len: %d\n", len);
-	buffer[9] = 0;
-	write(1, buffer, 10);
+	buffer[100] = 0;
+	write(1, buffer, 100);
+}
+
+void Server::send_messages(int socket)
+{
+	int len;
+
+	len = send(socket, "001: kifach \n", 13, 0);
+	(void)len;
+	printf("send 001\n");
 }

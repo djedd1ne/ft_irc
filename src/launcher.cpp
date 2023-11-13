@@ -65,6 +65,7 @@ int main(int argc, char **argv)
 				{
 					server.read_messages(conn[i].fd);
 				}
+				server.send_messages(conn[i].fd);
 			}
 		}
 	}
