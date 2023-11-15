@@ -1,6 +1,6 @@
 NAME = main
 CC = c++
-FLAGS = -std=c++98 -Wall -Werror -Wextra -fsanitize=address -g
+FLAGS = -std=c++98 -Wall -Werror -Wextra #-fsanitize=address -g
 
 SRC = src/launcher.cpp \
 	  src/Input.cpp \

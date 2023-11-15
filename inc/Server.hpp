@@ -19,6 +19,12 @@ struct info
 	std::string value;
 };
 
+struct hdata 
+{
+	std::string name;
+	std::string value;
+};
+
 class Server
 {
 	private:

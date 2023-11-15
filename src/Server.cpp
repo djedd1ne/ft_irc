@@ -1,6 +1,7 @@
 
 #include "../inc/Server.hpp"
 #include <cstring>
+#include <cerrno>
 
 // Constructors
 
@@ -79,13 +80,18 @@ int Server::read_messages(int socket)
 	char *buffer;
 	int len;
 	struct info *hdata;
+	struct hdata *hdata_h;
 
 	hdata = (struct info*)malloc(sizeof(struct info));
-	hdata->name = "version";
+	hdata->name = "PONG\n";
 	hdata->value = "12\n";
+	hdata_h = (struct hdata*)malloc(sizeof(struct hdata));
+	hdata_h->name = "version";
+	hdata_h->value = "1.2";
 	buffer = (char *)malloc(sizeof(char) * 100);
 	bzero(buffer, 100);
-	if ((recv(socket, buffer, 100, 0) < 0) and (errno != EWOULDBLOCK))
+	len = recv(socket, buffer, 100, 0);
+	if ((len < 0 && (errno != EWOULDBLOCK)))
 		exit(1);
 	(void)len;
 	write(1, buffer, 10);
@@ -94,7 +100,7 @@ int Server::read_messages(int socket)
 		printf("openng buffer\n");
 		int len;
 
-		len = send(socket, hdata, sizeof(hdata), 0);
+		len = send(socket, hdata_h, sizeof(hdata_h), 0);
 		printf("sending reply len: %d\n", len);
 		printf("sent buffer\n");
 		(void)len;
@@ -107,7 +113,7 @@ int Server::read_messages(int socket)
 		len = send(socket, hdata->name.c_str(), hdata->name.length(), 0);
 		(void)len;
 	}
-	return (1);
+	return (len);
 }
 
 void Server::send_messages(int socket)
