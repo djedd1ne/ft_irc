@@ -71,7 +71,9 @@ int main(int argc, char **argv)
 					{
 						printf("close it \n");
 						close(conn[i].fd);
+						printf("before\n");
 						conn[i] = conn[existingConns - 1];
+						printf("after\n");
 						existingConns--;
 					}
 					else

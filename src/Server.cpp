@@ -81,13 +81,14 @@ int Server::read_messages(int socket)
 	struct info *hdata;
 
 	hdata = (struct info*)malloc(sizeof(struct info));
-	hdata->name = "PONG 1232\n";
+	hdata->name = "version";
 	hdata->value = "12\n";
 	buffer = (char *)malloc(sizeof(char) * 100);
-	len = recv(socket, buffer, 100, 0);
+	bzero(buffer, 100);
+	if ((recv(socket, buffer, 100, 0) < 0) and (errno != EWOULDBLOCK))
+		exit(1);
 	(void)len;
-	buffer[100] = 0;
-	write(1, buffer, 100);
+	write(1, buffer, 10);
 	if (strncmp(buffer, "INFO version", 12) == 0)
 	{
 		printf("openng buffer\n");
@@ -106,7 +107,7 @@ int Server::read_messages(int socket)
 		len = send(socket, hdata->name.c_str(), hdata->name.length(), 0);
 		(void)len;
 	}
-	return (len);
+	return (1);
 }
 
 void Server::send_messages(int socket)
