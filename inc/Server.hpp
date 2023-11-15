@@ -13,6 +13,12 @@
 
 #define MY_DOMAIN "0.0.0.0"
 
+struct info 
+{
+	std::string name;
+	std::string value;
+};
+
 class Server
 {
 	private:

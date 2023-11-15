@@ -78,18 +78,32 @@ int Server::read_messages(int socket)
 {
 	char *buffer;
 	int len;
+	struct info *hdata;
 
+	hdata = (struct info*)malloc(sizeof(struct info));
+	hdata->name = "PONG 1232\n";
+	hdata->value = "12\n";
 	buffer = (char *)malloc(sizeof(char) * 100);
 	len = recv(socket, buffer, 100, 0);
 	(void)len;
 	buffer[100] = 0;
 	write(1, buffer, 100);
+	if (strncmp(buffer, "INFO version", 12) == 0)
+	{
+		printf("openng buffer\n");
+		int len;
+
+		len = send(socket, hdata, sizeof(hdata), 0);
+		printf("sending reply len: %d\n", len);
+		printf("sent buffer\n");
+		(void)len;
+	}
 	if (strncmp(buffer, "PING", 4) == 0)
 	{
 		printf("sending reply\n");
 		int len;
 
-		len = send(socket, "PONG\n", strlen("PONG\n"), 0);
+		len = send(socket, hdata->name.c_str(), hdata->name.length(), 0);
 		(void)len;
 	}
 	return (len);
