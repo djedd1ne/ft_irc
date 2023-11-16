@@ -94,23 +94,41 @@ int Server::read_messages(int socket)
 	if ((len < 0 && (errno != EWOULDBLOCK)))
 		exit(1);
 	(void)len;
-	write(1, buffer, 10);
-	if (strncmp(buffer, "INFO version", 12) == 0)
+	write(1, buffer, 100);
+	if (strncmp(buffer, "JOIN #can", strlen("JOIN #can")) == 0)
 	{
-		printf("openng buffer\n");
 		int len;
 
-		len = send(socket, hdata_h, sizeof(hdata_h), 0);
-		printf("sending reply len: %d\n", len);
-		printf("sent buffer\n");
+		len = send(socket, ":ssergiu!ssergiu@127.0.0.1 JOIN :#can\n", strlen(":ssergiu!ssergiu@127.0.0.1 JOIN :#can\n"), 0);
+		sleep(1);
+		len = send(socket, ":127.0.0.1 332 ssergiu #can :something\n", strlen(":127.0.0.1 332 ssergiu #can :something\n"), 0);
+		sleep(1);
+		len = send(socket, ":127.0.0.1 353 ssergiu #can :@ssergiu\n", strlen(":127.0.0.1 332 ssergiu = #can :@ssergiu\n"), 0);
+		sleep(1);
+		len = send(socket, ":127.0.0.1 366 ssergiu #can :End of \\NAMES list\n", strlen(":127.0.0.1 332 ssergiu #can :End of \\NAMES list\n"), 0);
+		sleep(1);
+		len = send(socket, "MODE #can\n", strlen("MODE #can\n"), 0);
 		(void)len;
 	}
-	if (strncmp(buffer, "PING", 4) == 0)
+	if (strncmp(buffer, "PING", strlen("PING")) == 0)
 	{
-		printf("sending reply\n");
 		int len;
 
-		len = send(socket, hdata->name.c_str(), hdata->name.length(), 0);
+		len = send(socket, "PONG\n", strlen("PONG\n"), 0);
+		(void)len;
+	}
+	if (strncmp(buffer, "CAP", strlen("CAP")) == 0)
+	{
+		int len;
+
+		len = send(socket, ":127.0.0.1 001 ssergiu: Welcome to the server, ssergiu! \r\n", strlen(":127.0.0.1 001 ssergiu: Welcome to the server, ssergiu! \r\n"), 0);
+		(void)len;
+	}
+	if (strncmp(buffer, "PRIVMSG #can", strlen("PRIVMSG #can")) == 0)
+	{
+		int len;
+
+		len = send(socket, ":ssergiu PRIVMSG #can :test!\r\n", strlen(":ssergiu PRIVMSG #can :test!\r\n"), 0);
 		(void)len;
 	}
 	return (len);

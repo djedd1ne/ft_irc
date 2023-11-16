@@ -76,8 +76,6 @@ int main(int argc, char **argv)
 						printf("after\n");
 						existingConns--;
 					}
-					else
-						server.send_messages(conn[i].fd);
 				}
 			}
 		}
