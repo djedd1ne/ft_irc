@@ -1,5 +1,6 @@
 
 #include "../inc/Server.hpp"
+#include "../inc/Client.hpp"
 #include <cstring>
 #include <cerrno>
 
@@ -97,17 +98,48 @@ int Server::read_messages(int socket)
 	write(1, buffer, 100);
 	if (strncmp(buffer, "JOIN #can", strlen("JOIN #can")) == 0)
 	{
+		int total = 0;
+		std::string msg = ":ssergiu!ssergiu@127.0.0.1 JOIN :#can\n";
+		int left = msg.length();
 		int len;
 
-		len = send(socket, ":ssergiu!ssergiu@127.0.0.1 JOIN :#can\n", strlen(":ssergiu!ssergiu@127.0.0.1 JOIN :#can\n"), 0);
-		sleep(1);
-		len = send(socket, ":127.0.0.1 332 ssergiu #can :something\n", strlen(":127.0.0.1 332 ssergiu #can :something\n"), 0);
-		sleep(1);
-		len = send(socket, ":127.0.0.1 353 ssergiu #can :@ssergiu\n", strlen(":127.0.0.1 332 ssergiu = #can :@ssergiu\n"), 0);
-		sleep(1);
-		len = send(socket, ":127.0.0.1 366 ssergiu #can :End of \\NAMES list\n", strlen(":127.0.0.1 332 ssergiu #can :End of \\NAMES list\n"), 0);
-		sleep(1);
-		len = send(socket, "MODE #can\n", strlen("MODE #can\n"), 0);
+		while (total < (int)msg.length())
+		{
+			len = send(socket, msg.c_str() + total, left, 0);
+			total += len;
+			left -= len;
+		}
+
+		total = 0;
+		msg = ":127.0.0.1 332 ssergiu #can :something\n";
+		left = msg.length();
+		while (total < (int)msg.length())
+		{
+			len = send(socket, msg.c_str() + total, left, 0);
+			total += len;
+			left -= len;
+		}
+
+		total = 0;
+		msg = ":127.0.0.1 353 ssergiu = #can :@ssergiu\n";
+		left = msg.length();
+		while (total < (int)msg.length())
+		{
+			len = send(socket, msg.c_str() + total, left, 0);
+			total += len;
+			left -= len;
+		}
+
+		total = 0;
+		msg = ":127.0.0.1 366 ssergiu #can :End of NAMES list\n";
+		left = msg.length();
+		while (total < (int)msg.length())
+		{
+			len = send(socket, msg.c_str() + total, left, 0);
+			total += len;
+			left -= len;
+		}
+		//len = send(socket, "JOIN #can :ssergiu\n", strlen("JOIN #can\n"), 0);
 		(void)len;
 	}
 	if (strncmp(buffer, "PING", strlen("PING")) == 0)
@@ -140,4 +172,10 @@ void Server::send_messages(int socket)
 
 	len = send(socket, ":127.0.0.1 001 ssergiu: Welcome to the server, ssergiu! \n", strlen(":127.0.0.1 001 ssergiu: Welcome to the server, ssergiu! \n"), 0);
 	(void)len;
+}
+	
+void Server::registerClient(int socket)
+{
+	Client *newClient = new Client(socket);	
+	clients.push_back(newClient);
 }

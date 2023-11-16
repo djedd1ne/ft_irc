@@ -7,11 +7,14 @@
 #include <string>
 #include <unistd.h>
 #include <iostream>
+#include <vector>
 #include <sys/types.h>
 #include <netdb.h>
 #include <stdio.h>
 
 #define MY_DOMAIN "0.0.0.0"
+
+class Client;
 
 struct info 
 {
@@ -28,6 +31,7 @@ struct hdata
 class Server
 {
 	private:
+		std::vector <Client *> clients;
 	public:
 		Server(void);
 		Server(const Server&);
@@ -37,8 +41,9 @@ class Server
 		void bind_socket(int , addrinfo **);
 		void start_listening(int );
 		int accept_conn(int , addrinfo **);
-		int read_messages(int socket);
-		void send_messages(int socket);
+		int read_messages(int );
+		void send_messages(int );
+		void registerClient(int );
 
 };
 

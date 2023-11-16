@@ -59,6 +59,7 @@ int main(int argc, char **argv)
 				if (conn[i].fd == socket)
 				{
 					conn[existingConns].fd = server.accept_conn(socket, &test);
+					server.registerClient(conn[existingConns].fd);
 					conn[existingConns].events = POLLIN;
 					existingConns++;
 					

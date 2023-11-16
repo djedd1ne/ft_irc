@@ -12,8 +12,8 @@ class Client
 		//array of channels
 		std::string username;
 		bool op;
-	public:
 		Client(void);
+	public:
 		Client(int &);
 		Client(const Client&);
 		Client operator= (const Client&);
