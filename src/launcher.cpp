@@ -23,7 +23,6 @@ int main(int argc, char **argv)
 	//do memory management before exits in Server (if exists);
 	//change perror to trow exceptions;
 
-	int			socket;
 	Input		input(argc, argv);
 	Server		server;
 	addrinfo	*test;
@@ -34,15 +33,15 @@ int main(int argc, char **argv)
 	input.parseInput();
 	input.getAddrInfoStruct(&test);
 
-	socket = server.create_socket();
-	server.bind_socket(socket, &test);
+	server.create_socket();
+	server.bind_socket(&test);
 
     std::cout << "Server is listening on port " << input.getPort() << std::endl;
 
-	server.start_listening(socket);
+	server.start_listening();
 
 	int pollc;
-	conn[0].fd = socket;
+	conn[0].fd = server.getSocket();
 	conn[0].events = POLLIN;
 	existingConns = 1;
 	while(1)
@@ -56,9 +55,9 @@ int main(int argc, char **argv)
 			if (conn[i].revents & POLLIN)
 			{
 				//if server is ready to read, handle new conn
-				if (conn[i].fd == socket)
+				if (conn[i].fd == server.getSocket())
 				{
-					conn[existingConns].fd = server.accept_conn(socket, &test);
+					conn[existingConns].fd = server.accept_conn(&test);
 					server.registerClient(conn[existingConns].fd);
 					conn[existingConns].events = POLLIN;
 					existingConns++;

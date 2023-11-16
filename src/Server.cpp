@@ -27,41 +27,45 @@ Server::~Server(void)
 
 // Functions
 
-int	Server::create_socket(void)
+int	Server::getSocket(void)
 {
-    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+	return (this->_socket);
+}
 
-    if (socket_fd == -1) 
+void Server::create_socket(void)
+{
+    this->_socket = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (this->_socket == -1) 
 	{
         perror("Failed to create socket");
-        return (-1);
+        exit(1);
     }
-	return (socket_fd);
 }
 
-void Server::bind_socket(int socket, addrinfo **test)
+void Server::bind_socket(addrinfo **test)
 {
-    if (bind(socket, (*test)->ai_addr, (*test)->ai_addrlen))
+    if (bind(this->_socket, (*test)->ai_addr, (*test)->ai_addrlen))
 	{
         perror("Failed to bind socket");
-        close(socket);
+        close(this->_socket);
         exit(1);
     }
 }
 
-void Server::start_listening(int socket)
+void Server::start_listening(void)
 {
-    if (listen(socket, SOMAXCONN) == -1) 
+    if (listen(this->_socket, SOMAXCONN) == -1) 
 	{
         perror("Failed to listen for connections");
-        close(socket);
+        close(this->_socket);
         exit(1);
     }
 }
 
-int Server::accept_conn(int socket, addrinfo **test)
+int Server::accept_conn(addrinfo **test)
 {
-	int clientSocket = accept(socket, (*test)->ai_addr, &(*test)->ai_addrlen);
+	int clientSocket = accept(this->_socket, (*test)->ai_addr, &(*test)->ai_addrlen);
 
 	if (clientSocket == -1) 
 	{
@@ -99,7 +103,7 @@ int Server::read_messages(int socket)
 	if (strncmp(buffer, "JOIN #can", strlen("JOIN #can")) == 0)
 	{
 		int total = 0;
-		std::string msg = ":ssergiu!ssergiu@127.0.0.1 JOIN :#can\n";
+		std::string msg = ":ssergiu!ssergiu@0.0.0.0 JOIN :#can\n";
 		int left = msg.length();
 		int len;
 
@@ -111,7 +115,7 @@ int Server::read_messages(int socket)
 		}
 
 		total = 0;
-		msg = ":127.0.0.1 332 ssergiu #can :something\n";
+		msg = ":0.0.0.0 332 ssergiu #can :something\n";
 		left = msg.length();
 		while (total < (int)msg.length())
 		{
@@ -121,7 +125,7 @@ int Server::read_messages(int socket)
 		}
 
 		total = 0;
-		msg = ":127.0.0.1 353 ssergiu = #can :@ssergiu\n";
+		msg = ":0.0.0.0 353 ssergiu = #can :@ssergiu, djmekki, doreshev, azer\n";
 		left = msg.length();
 		while (total < (int)msg.length())
 		{
@@ -131,7 +135,7 @@ int Server::read_messages(int socket)
 		}
 
 		total = 0;
-		msg = ":127.0.0.1 366 ssergiu #can :End of NAMES list\n";
+		msg = ":0.0.0.0 366 ssergiu #can :End of NAMES list\n";
 		left = msg.length();
 		while (total < (int)msg.length())
 		{
@@ -149,11 +153,11 @@ int Server::read_messages(int socket)
 		len = send(socket, "PONG\n", strlen("PONG\n"), 0);
 		(void)len;
 	}
-	if (strncmp(buffer, "CAP", strlen("CAP")) == 0)
+	if (strncmp(buffer, "CAP LS 302", strlen("CAP LS 302")) == 0)
 	{
 		int len;
 
-		len = send(socket, ":127.0.0.1 001 ssergiu: Welcome to the server, ssergiu! \r\n", strlen(":127.0.0.1 001 ssergiu: Welcome to the server, ssergiu! \r\n"), 0);
+		len = send(socket, ":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n", strlen(":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n"), 0);
 		(void)len;
 	}
 	if (strncmp(buffer, "PRIVMSG #can", strlen("PRIVMSG #can")) == 0)
@@ -170,7 +174,7 @@ void Server::send_messages(int socket)
 {
 	int len;
 
-	len = send(socket, ":127.0.0.1 001 ssergiu: Welcome to the server, ssergiu! \n", strlen(":127.0.0.1 001 ssergiu: Welcome to the server, ssergiu! \n"), 0);
+	len = send(socket, ":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \n", strlen(":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \n"), 0);
 	(void)len;
 }
 	

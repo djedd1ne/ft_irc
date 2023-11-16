@@ -15,6 +15,7 @@
 #define MY_DOMAIN "0.0.0.0"
 
 class Client;
+struct pollfd;
 
 struct info 
 {
@@ -31,16 +32,18 @@ struct hdata
 class Server
 {
 	private:
+		int _socket;
 		std::vector <Client *> clients;
 	public:
 		Server(void);
 		Server(const Server&);
 		Server operator= (const Server&);
 		~Server(void);
-		int create_socket(void);	
-		void bind_socket(int , addrinfo **);
-		void start_listening(int );
-		int accept_conn(int , addrinfo **);
+		int	getSocket(void);
+		void create_socket(void);	
+		void bind_socket(addrinfo **);
+		void start_listening(void);
+		int accept_conn(addrinfo **);
 		int read_messages(int );
 		void send_messages(int );
 		void registerClient(int );
