@@ -24,17 +24,16 @@ int main(int argc, char **argv)
 	//change perror to trow exceptions;
 
 	Input		input(argc, argv);
-	Server		server;
-	addrinfo	*test;
+	Server		server(argv[1]);
 	pollfd		conn[CONNECTIONS];
 	int			existingConns;
 
 	(void)conn;
 	input.parseInput();
-	input.getAddrInfoStruct(&test);
+	server.setAddrInfo();
 
 	server.create_socket();
-	server.bind_socket(&test);
+	server.bind_socket();
 
     std::cout << "Server is listening on port " << input.getPort() << std::endl;
 
@@ -57,7 +56,7 @@ int main(int argc, char **argv)
 				//if server is ready to read, handle new conn
 				if (conn[i].fd == server.getSocket())
 				{
-					conn[existingConns].fd = server.accept_conn(&test);
+					conn[existingConns].fd = server.accept_conn();
 					server.registerClient(conn[existingConns].fd);
 					conn[existingConns].events = POLLIN;
 					existingConns++;

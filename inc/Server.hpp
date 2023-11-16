@@ -32,18 +32,22 @@ struct hdata
 class Server
 {
 	private:
+		char *port;
 		int _socket;
+		addrinfo *addr;
 		std::vector <Client *> clients;
-	public:
 		Server(void);
+	public:
+		Server(char *string);
 		Server(const Server&);
 		Server operator= (const Server&);
 		~Server(void);
+		void setAddrInfo(void);
 		int	getSocket(void);
 		void create_socket(void);	
-		void bind_socket(addrinfo **);
+		void bind_socket(void);
 		void start_listening(void);
-		int accept_conn(addrinfo **);
+		int accept_conn(void);
 		int read_messages(int );
 		void send_messages(int );
 		void registerClient(int );

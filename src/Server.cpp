@@ -1,13 +1,15 @@
 
 #include "../inc/Server.hpp"
+#include "../inc/Input.hpp"
 #include "../inc/Client.hpp"
 #include <cstring>
 #include <cerrno>
 
 // Constructors
 
-Server::Server(void)
+Server::Server(char *string)
 {
+	this->port = string;
 }
 
 Server::Server(const Server &src)
@@ -27,6 +29,11 @@ Server::~Server(void)
 
 // Functions
 
+void Server::setAddrInfo(void)
+{
+	getaddrinfo(MY_DOMAIN, this->port, NULL, &this->addr);
+}
+
 int	Server::getSocket(void)
 {
 	return (this->_socket);
@@ -43,9 +50,9 @@ void Server::create_socket(void)
     }
 }
 
-void Server::bind_socket(addrinfo **test)
+void Server::bind_socket(void)
 {
-    if (bind(this->_socket, (*test)->ai_addr, (*test)->ai_addrlen))
+    if (bind(this->_socket, this->addr->ai_addr, this->addr->ai_addrlen))
 	{
         perror("Failed to bind socket");
         close(this->_socket);
@@ -63,9 +70,9 @@ void Server::start_listening(void)
     }
 }
 
-int Server::accept_conn(addrinfo **test)
+int Server::accept_conn(void)
 {
-	int clientSocket = accept(this->_socket, (*test)->ai_addr, &(*test)->ai_addrlen);
+	int clientSocket = accept(this->_socket, this->addr->ai_addr, &this->addr->ai_addrlen);
 
 	if (clientSocket == -1) 
 	{
