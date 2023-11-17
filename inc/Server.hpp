@@ -38,6 +38,11 @@ class Server
 		void start_listening(void);
 		int accept_conn(void);
 		int readMsg(int );
+		void handleCommand(std::vector<std::string>, int);
+		void privMsgCmd(std::vector<std::string> , int);
+		void pingCmd(std::vector<std::string> , int);
+		void caplsCmd(std::vector<std::string> , int);
+		void joinCmd(std::vector<std::string> , int);
 		std::vector<std::string> parseMsg(std::string );
 		std::string getMsg(int socket);
 		void send_messages(int );

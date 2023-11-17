@@ -91,6 +91,7 @@ std::vector<std::string> Server::parseMsg(std::string msg)
 {
 	std::vector<std::string> res;	
 	size_t pos = 0;
+	
 	while (pos < msg.size())
 	{
 		pos = msg.find(" ");
@@ -103,7 +104,7 @@ std::vector<std::string> Server::parseMsg(std::string msg)
 std::string Server::getMsg(int socket)
 {
 	char *buffer;
-	std::string msg;
+	std::string msg("");
 
 	buffer = (char *)malloc(sizeof(char) * 256);
 	bzero(buffer, 256);
@@ -112,17 +113,54 @@ std::string Server::getMsg(int socket)
 	return (msg);
 }
 
-int Server::readMsg(int socket)
+void Server::handleCommand(std::vector<std::string> cmd, int socket)
 {
-	std::string buffer;
+	if(cmd[0] == "CAP")
+		caplsCmd(cmd, socket);
+	else if(cmd[0] == "JOIN")
+		joinCmd(cmd, socket);
+	else if(cmd[0] == "PING")
+		pingCmd(cmd, socket);
+	else if(cmd[0] == "PRIVMSG")
+		privMsgCmd(cmd, socket);
+}
 
-	buffer = getMsg(socket);
-	command = parseMsg(buffer);
-	//debugging purposes
-	for (size_t i = 0; i < command.size(); i++)
-		printf("COMMAND [%ld]: %s\n", i, command[i].c_str());
-	// ---------------
-	if (strncmp(buffer.c_str(), "JOIN #can", strlen("JOIN #can")) == 0)
+void Server::privMsgCmd(std::vector<std::string> cmd, int socket)
+{
+	if (cmd[0] == "PRIVMSG")
+	{
+		int len;
+
+		len = send(socket, ":ssergiu PRIVMSG #can :test!\r\n", strlen(":ssergiu PRIVMSG #can :test!\r\n"), 0);
+		(void)len;
+	}
+}
+
+void Server::pingCmd(std::vector<std::string> cmd, int socket)
+{
+	if (cmd[0] == "PING")
+	{
+		int len;
+
+		len = send(socket, "PONG\n", strlen("PONG\n"), 0);
+		(void)len;
+	}
+}
+
+void Server::caplsCmd(std::vector<std::string> cmd, int socket)
+{
+	if (cmd[0] == "CAP")
+	{
+		int len;
+
+		len = send(socket, ":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n", strlen(":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n"), 0);
+		(void)len;
+	}
+}
+
+void Server::joinCmd(std::vector<std::string> cmd, int socket)
+{
+	if (cmd[0] == "JOIN")
 	{
 		int total = 0;
 		std::string msg = ":ssergiu!ssergiu@0.0.0.0 JOIN :#can\n";
@@ -168,27 +206,17 @@ int Server::readMsg(int socket)
 		//len = send(socket, "JOIN #can :ssergiu\n", strlen("JOIN #can\n"), 0);
 		(void)len;
 	}
-	if (strncmp(buffer.c_str(), "PING", strlen("PING")) == 0)
-	{
-		int len;
+}
 
-		len = send(socket, "PONG\n", strlen("PONG\n"), 0);
-		(void)len;
-	}
-	if (strncmp(buffer.c_str(), "CAP LS 302", strlen("CAP LS 302")) == 0)
-	{
-		int len;
-
-		len = send(socket, ":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n", strlen(":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n"), 0);
-		(void)len;
-	}
-	if (strncmp(buffer.c_str(), "PRIVMSG #can", strlen("PRIVMSG #can")) == 0)
-	{
-		int len;
-
-		len = send(socket, ":ssergiu PRIVMSG #can :test!\r\n", strlen(":ssergiu PRIVMSG #can :test!\r\n"), 0);
-		(void)len;
-	}
+int Server::readMsg(int socket)
+{
+	command = parseMsg(getMsg(socket));
+	//debugging purposes
+	for (size_t i = 0; i < command.size(); i++)
+		printf("COMMAND [%ld]: %s\n", i, command[i].c_str());
+	// ---------------
+	if (!command.empty())
+		handleCommand(command, socket);
 	return (1);
 }
 
