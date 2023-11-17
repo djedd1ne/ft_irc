@@ -116,10 +116,37 @@ std::string Server::getMsg(int socket)
 
 void Server::handleCommand(std::vector<std::string> cmd, int socket, int clientIndex)
 {
-	if(clients[clientIndex]->isRegistered() == false && cmd[0] == "CAP")
+	if(clients[clientIndex]->isRegistered() == false)
 	{
-		caplsCmd(cmd, socket);
-		clients[clientIndex]->registerUser();
+		if(cmd[0] == "CAP" && clients[clientIndex]->wasCapSent() == false)
+			clients[clientIndex]->capSent();
+		if (clients[clientIndex]->wasCapSent() == true)
+		{
+			if (cmd[0] == "PASS")
+			{
+				printf("cmd[1] is : -%s-\n", cmd[1].c_str());
+				printf("password -%s-\n", password.c_str());
+				if (cmd[1] == password+"\n")
+				{
+					printf("yes\n");
+					send(socket, "password is correct", strlen("password is correct"), 0);
+					clients[clientIndex]->passSent();
+				}
+			}
+			if (clients[clientIndex]->wasPassSent() == true && cmd[0] == "NICK")
+			{
+				clients[clientIndex]->setNick(cmd[1]);
+				clients[clientIndex]->nickSent();
+			}
+			if (clients[clientIndex]->wasPassSent() == true && cmd[0] == "USER")
+			{
+				clients[clientIndex]->setUsername(cmd[1]);
+				clients[clientIndex]->userSent();
+				send(socket, ":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n", strlen(":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n"), 0);
+				clients[clientIndex]->registerUser();
+			}
+		}
+				
 	}
 	else if (clients[clientIndex]->isRegistered())
 	{
@@ -163,7 +190,7 @@ void Server::caplsCmd(std::vector<std::string> cmd, int socket)
 	{
 		int len;
 		(void)len;
-		len = send(socket, ":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n", strlen(":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n"), 0);
+		(void)socket;
 	}
 }
 

@@ -8,11 +8,15 @@ class Client
 {
 	private:
 		int socket;
-		std::string nick;
+		std::string _nick;
 		//array of channels
-		std::string username;
+		std::string _username;
 		bool op;
 		bool registered;
+		bool _capSent;
+		bool _passSent;
+		bool _usrSent;
+		bool _nickSent;
 		Client(void);
 	public:
 		Client(int &);
@@ -24,6 +28,16 @@ class Client
 		bool isRegistered();
 		void registerUser();
 		bool isOp();
+		void capSent();
+		bool wasCapSent();
+		void setNick(std::string );
+		void setUsername(std::string );
+		void nickSent();
+		void passSent();
+		void userSent();
+		bool wasNickSent();
+		bool wasPassSent();
+		bool wasUSerSent();
 };
 
 #endif
