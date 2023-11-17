@@ -16,6 +16,8 @@ OBJ = src/launcher.o \
 
 all:$(NAME)
 
+run:$(NAME)
+	./ircserv 8080 pass
 $(NAME): $(OBJ)
 	$(CC) $(FLAGS) $(OBJ) -o $@
 

@@ -24,6 +24,7 @@ class Server
 		int _socket;
 		addrinfo *addr;
 		std::vector <Client *> clients;
+		std::vector <std::string> command;
 		Server(void);
 	public:
 		Server(char *string);
@@ -36,7 +37,9 @@ class Server
 		void bind_socket(void);
 		void start_listening(void);
 		int accept_conn(void);
-		int read_messages(int );
+		int readMsg(int );
+		std::vector<std::string> parseMsg(std::string );
+		std::string getMsg(int socket);
 		void send_messages(int );
 		void registerClient(int );
 

@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 				//if not listener then its just a regular client
 				else
 				{
-					if (server.read_messages(conn[i].fd) == 0)
+					if (server.readMsg(conn[i].fd) == 0)
 					{
 						printf("close it \n");
 						close(conn[i].fd);

@@ -87,19 +87,42 @@ int Server::accept_conn(void)
 	return (clientSocket);
 }
 
-int Server::read_messages(int socket)
+std::vector<std::string> Server::parseMsg(std::string msg)
+{
+	std::vector<std::string> res;	
+	size_t pos = 0;
+	while (pos < msg.size())
+	{
+		pos = msg.find(" ");
+		res.push_back(msg.substr(0, pos));
+		msg.erase(0, pos + 1);
+	}
+	return res;
+}
+
+std::string Server::getMsg(int socket)
 {
 	char *buffer;
-	int len;
+	std::string msg;
 
-	buffer = (char *)malloc(sizeof(char) * 100);
-	bzero(buffer, 100);
-	len = recv(socket, buffer, 100, 0);
-	if ((len < 0 && (errno != EWOULDBLOCK)))
-		exit(1);
-	(void)len;
-	write(1, buffer, 100);
-	if (strncmp(buffer, "JOIN #can", strlen("JOIN #can")) == 0)
+	buffer = (char *)malloc(sizeof(char) * 256);
+	bzero(buffer, 256);
+	recv(socket, buffer, 255, 0);
+	msg = buffer;
+	return (msg);
+}
+
+int Server::readMsg(int socket)
+{
+	std::string buffer;
+
+	buffer = getMsg(socket);
+	command = parseMsg(buffer);
+	//debugging purposes
+	for (size_t i = 0; i < command.size(); i++)
+		printf("COMMAND [%ld]: %s\n", i, command[i].c_str());
+	// ---------------
+	if (strncmp(buffer.c_str(), "JOIN #can", strlen("JOIN #can")) == 0)
 	{
 		int total = 0;
 		std::string msg = ":ssergiu!ssergiu@0.0.0.0 JOIN :#can\n";
@@ -145,28 +168,28 @@ int Server::read_messages(int socket)
 		//len = send(socket, "JOIN #can :ssergiu\n", strlen("JOIN #can\n"), 0);
 		(void)len;
 	}
-	if (strncmp(buffer, "PING", strlen("PING")) == 0)
+	if (strncmp(buffer.c_str(), "PING", strlen("PING")) == 0)
 	{
 		int len;
 
 		len = send(socket, "PONG\n", strlen("PONG\n"), 0);
 		(void)len;
 	}
-	if (strncmp(buffer, "CAP LS 302", strlen("CAP LS 302")) == 0)
+	if (strncmp(buffer.c_str(), "CAP LS 302", strlen("CAP LS 302")) == 0)
 	{
 		int len;
 
 		len = send(socket, ":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n", strlen(":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n"), 0);
 		(void)len;
 	}
-	if (strncmp(buffer, "PRIVMSG #can", strlen("PRIVMSG #can")) == 0)
+	if (strncmp(buffer.c_str(), "PRIVMSG #can", strlen("PRIVMSG #can")) == 0)
 	{
 		int len;
 
 		len = send(socket, ":ssergiu PRIVMSG #can :test!\r\n", strlen(":ssergiu PRIVMSG #can :test!\r\n"), 0);
 		(void)len;
 	}
-	return (len);
+	return (1);
 }
 
 void Server::send_messages(int socket)
