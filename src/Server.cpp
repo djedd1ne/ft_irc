@@ -163,7 +163,7 @@ void Server::joinCmd(std::vector<std::string> cmd, int socket)
 	if (cmd[0] == "JOIN")
 	{
 		int total = 0;
-		std::string msg = ":ssergiu!ssergiu@0.0.0.0 JOIN :#can\n";
+		std::string msg = ":ssergiu!ssergiu@0.0.0.0 JOIN :" + cmd[1] + "\r\n";
 		int left = msg.length();
 		int len;
 
@@ -175,7 +175,7 @@ void Server::joinCmd(std::vector<std::string> cmd, int socket)
 		}
 
 		total = 0;
-		msg = ":0.0.0.0 332 ssergiu #can :something\n";
+		msg = ":0.0.0.0 332 ssergiu" + cmd[1] + ":something\r\n";
 		left = msg.length();
 		while (total < (int)msg.length())
 		{
@@ -185,7 +185,7 @@ void Server::joinCmd(std::vector<std::string> cmd, int socket)
 		}
 
 		total = 0;
-		msg = ":0.0.0.0 353 ssergiu = #can :@ssergiu, djmekki, doreshev, azer\n";
+		msg = ":0.0.0.0 353 ssergiu = " + cmd[1] + ":@ssergiu, djmekki, doreshev, azer\r\n";
 		left = msg.length();
 		while (total < (int)msg.length())
 		{
@@ -195,7 +195,7 @@ void Server::joinCmd(std::vector<std::string> cmd, int socket)
 		}
 
 		total = 0;
-		msg = ":0.0.0.0 366 ssergiu #can :End of NAMES list\n";
+		msg = ":0.0.0.0 366 ssergiu " + cmd[1] + ":End of NAMES list\r\n";
 		left = msg.length();
 		while (total < (int)msg.length())
 		{
