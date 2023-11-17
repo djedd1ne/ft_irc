@@ -17,18 +17,6 @@
 class Client;
 struct pollfd;
 
-struct info 
-{
-	std::string name;
-	std::string value;
-};
-
-struct hdata 
-{
-	std::string name;
-	std::string value;
-};
-
 class Server
 {
 	private:

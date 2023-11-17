@@ -91,15 +91,7 @@ int Server::read_messages(int socket)
 {
 	char *buffer;
 	int len;
-	struct info *hdata;
-	struct hdata *hdata_h;
 
-	hdata = (struct info*)malloc(sizeof(struct info));
-	hdata->name = "PONG\n";
-	hdata->value = "12\n";
-	hdata_h = (struct hdata*)malloc(sizeof(struct hdata));
-	hdata_h->name = "version";
-	hdata_h->value = "1.2";
 	buffer = (char *)malloc(sizeof(char) * 100);
 	bzero(buffer, 100);
 	len = recv(socket, buffer, 100, 0);

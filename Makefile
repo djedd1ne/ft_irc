@@ -1,4 +1,4 @@
-NAME = main
+NAME = ircserv
 CC = c++
 FLAGS = -std=c++98 -Wall -Werror -Wextra #-fsanitize=address -g
 
