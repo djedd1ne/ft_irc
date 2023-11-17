@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 	//change perror to trow exceptions;
 
 	Input		input(argc, argv);
-	Server		server(argv[1]);
+	Server		server(argv);
 	pollfd		conn[CONNECTIONS];
 	int			existingConns;
 

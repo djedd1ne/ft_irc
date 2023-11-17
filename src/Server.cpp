@@ -7,9 +7,10 @@
 
 // Constructors
 
-Server::Server(char *string)
+Server::Server(char **string)
 {
-	this->port = string;
+	this->port = string[1];
+	this->password = string[2];
 }
 
 Server::Server(const Server &src)
@@ -113,16 +114,25 @@ std::string Server::getMsg(int socket)
 	return (msg);
 }
 
-void Server::handleCommand(std::vector<std::string> cmd, int socket)
+void Server::handleCommand(std::vector<std::string> cmd, int socket, int clientIndex)
 {
-	if(cmd[0] == "CAP")
+	if(clients[clientIndex]->isRegistered() == false && cmd[0] == "CAP")
+	{
 		caplsCmd(cmd, socket);
-	else if(cmd[0] == "JOIN")
-		joinCmd(cmd, socket);
-	else if(cmd[0] == "PING")
-		pingCmd(cmd, socket);
-	else if(cmd[0] == "PRIVMSG")
-		privMsgCmd(cmd, socket);
+		clients[clientIndex]->registerUser();
+	}
+	else if (clients[clientIndex]->isRegistered())
+	{
+		if(cmd[0] == "JOIN")
+			joinCmd(cmd, socket);
+		else if(cmd[0] == "PING")
+			pingCmd(cmd, socket);
+		else if(cmd[0] == "PRIVMSG")
+			privMsgCmd(cmd, socket);
+	}
+	else
+		send(socket, "Please register first!", strlen("Please register first!"), 0);
+		
 }
 
 void Server::privMsgCmd(std::vector<std::string> cmd, int socket)
@@ -152,9 +162,8 @@ void Server::caplsCmd(std::vector<std::string> cmd, int socket)
 	if (cmd[0] == "CAP")
 	{
 		int len;
-
-		len = send(socket, ":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n", strlen(":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n"), 0);
 		(void)len;
+		len = send(socket, ":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n", strlen(":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n"), 0);
 	}
 }
 
@@ -207,16 +216,28 @@ void Server::joinCmd(std::vector<std::string> cmd, int socket)
 		(void)len;
 	}
 }
+size_t	Server::findClient(int socket)
+{
+	for (size_t i = 0; i < clients.size(); i++)
+	{
+		if (clients[i]->getSocket() == socket)
+			return (i);
+	}
+	return (0);
+}
 
 int Server::readMsg(int socket)
 {
+	int clientIndex;
+
+	clientIndex = findClient(socket);
 	command = parseMsg(getMsg(socket));
 	//debugging purposes
 	for (size_t i = 0; i < command.size(); i++)
 		printf("COMMAND [%ld]: %s\n", i, command[i].c_str());
 	// ---------------
 	if (!command.empty())
-		handleCommand(command, socket);
+		handleCommand(command, socket, clientIndex);
 	return (1);
 }
 

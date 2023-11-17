@@ -21,13 +21,14 @@ class Server
 {
 	private:
 		char *port;
+		std::string password;
 		int _socket;
 		addrinfo *addr;
 		std::vector <Client *> clients;
 		std::vector <std::string> command;
 		Server(void);
 	public:
-		Server(char *string);
+		Server(char **string);
 		Server(const Server&);
 		Server operator= (const Server&);
 		~Server(void);
@@ -36,9 +37,10 @@ class Server
 		void create_socket(void);	
 		void bind_socket(void);
 		void start_listening(void);
+		size_t	findClient(int socket);
 		int accept_conn(void);
 		int readMsg(int );
-		void handleCommand(std::vector<std::string>, int);
+		void handleCommand(std::vector<std::string>, int, int);
 		void privMsgCmd(std::vector<std::string> , int);
 		void pingCmd(std::vector<std::string> , int);
 		void caplsCmd(std::vector<std::string> , int);

@@ -12,6 +12,7 @@ class Client
 		//array of channels
 		std::string username;
 		bool op;
+		bool registered;
 		Client(void);
 	public:
 		Client(int &);
@@ -20,6 +21,9 @@ class Client
 		~Client(void);
 		void setSocket(int &sock);
 		int getSocket(void);
+		bool isRegistered();
+		void registerUser();
+		bool isOp();
 };
 
 #endif
