@@ -7,25 +7,48 @@
 #include <string>
 #include <unistd.h>
 #include <iostream>
+#include <vector>
 #include <sys/types.h>
 #include <netdb.h>
 #include <stdio.h>
 
-#define MY_DOMAIN "127.0.0.1"
+#define MY_DOMAIN "0.0.0.0"
+
+class Client;
+struct pollfd;
 
 class Server
 {
 	private:
-	public:
+		char *port;
+		std::string password;
+		int _socket;
+		addrinfo *addr;
+		std::vector <Client *> clients;
+		std::vector <std::string> command;
 		Server(void);
+	public:
+		Server(char **string);
 		Server(const Server&);
 		Server operator= (const Server&);
 		~Server(void);
-		int create_socket(void);	
-		void bind_socket(int , addrinfo **);
-		void start_listening(int );
-		int accept_conn(int , addrinfo **);
-		void read_messages(int socket);
+		void setAddrInfo(void);
+		int	getSocket(void);
+		void create_socket(void);	
+		void bind_socket(void);
+		void start_listening(void);
+		size_t	findClient(int socket);
+		int accept_conn(void);
+		int readMsg(int );
+		void handleCommand(std::vector<std::string>, int, int);
+		void privMsgCmd(std::vector<std::string> , int);
+		void pingCmd(std::vector<std::string> , int);
+		void caplsCmd(std::vector<std::string> , int);
+		void joinCmd(std::vector<std::string> , int);
+		std::vector<std::string> parseMsg(std::string );
+		std::string getMsg(int socket);
+		void send_messages(int );
+		void registerClient(int );
 
 };
 

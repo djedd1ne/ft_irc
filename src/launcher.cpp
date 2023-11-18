@@ -16,32 +16,67 @@
 #include <vector>
 #include <poll.h>
 
+#define CONNECTIONS 10
+
 int main(int argc, char **argv)
 {
 	//do memory management before exits in Server (if exists);
 	//change perror to trow exceptions;
 
-	int			socket;
 	Input		input(argc, argv);
-	Server		server;
-	addrinfo	*test;
-	pollfd	conn;
+	Server		server(argv);
+	pollfd		conn[CONNECTIONS];
+	int			existingConns;
 
 	(void)conn;
 	input.parseInput();
-	input.getAddrInfoStruct(&test);
+	server.setAddrInfo();
 
-	socket = server.create_socket();
-	server.bind_socket(socket, &test);
+	server.create_socket();
+	server.bind_socket();
 
     std::cout << "Server is listening on port " << input.getPort() << std::endl;
 
-	int clientsocket;
+	server.start_listening();
 
-    while (1)
+	int pollc;
+	conn[0].fd = server.getSocket();
+	conn[0].events = POLLIN;
+	existingConns = 1;
+	while(1)
 	{
-		server.start_listening(socket);
-		clientsocket = server.accept_conn(socket, &test);
-		server.read_messages(clientsocket);
+		pollc = poll(conn, existingConns, -1);
+		(void)pollc;
+		//iterate over conns
+		for (int i = 0; i < existingConns; i++)
+		{
+			// if file descriptor is ready to read
+			if (conn[i].revents & POLLIN)
+			{
+				//if server is ready to read, handle new conn
+				if (conn[i].fd == server.getSocket())
+				{
+					conn[existingConns].fd = server.accept_conn();
+					server.registerClient(conn[existingConns].fd);
+					conn[existingConns].events = POLLIN;
+					existingConns++;
+					
+					std::cout << "New connection accepted: "<<std::endl;
+				}
+				//if not listener then its just a regular client
+				else
+				{
+					if (server.readMsg(conn[i].fd) == 0)
+					{
+						printf("close it \n");
+						close(conn[i].fd);
+						printf("before\n");
+						conn[i] = conn[existingConns - 1];
+						printf("after\n");
+						existingConns--;
+					}
+				}
+			}
+		}
 	}
 }
