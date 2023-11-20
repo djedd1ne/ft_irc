@@ -4,6 +4,7 @@
 #include "../inc/Client.hpp"
 #include <cstring>
 #include <cerrno>
+#include <arpa/inet.h>
 
 // Constructors
 
@@ -73,7 +74,18 @@ void Server::start_listening(void)
 
 int Server::accept_conn(void)
 {
-	int clientSocket = accept(this->_socket, this->addr->ai_addr, &this->addr->ai_addrlen);
+	struct sockaddr_storage client;
+	memset(&client, 0, sizeof(sockaddr_storage));
+	socklen_t addrlen;
+	addrlen = sizeof(client);
+	
+	int clientSocket = accept(this->_socket, (sockaddr *)&client, &addrlen);
+    if (client.ss_family == AF_INET)
+	{
+        struct sockaddr_in *ptr = (struct sockaddr_in *)&client;
+		printf("client ip is: %s\n", inet_ntoa(ptr->sin_addr));
+	}
+	
 
 	if (clientSocket == -1) 
 	{
