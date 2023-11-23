@@ -23,7 +23,7 @@ class Server
 {
 	private:
 		struct pollfd conn[CONNECTIONS];
-		char *port;
+		std::string port;
 		std::string password;
 		int _socket;
 		addrinfo *addr;
@@ -37,6 +37,7 @@ class Server
 		~Server(void);
 		void setAddrInfo(void);
 		int	getSocket(void);
+		std::string	getPort(void);
 		void create_socket(void);	
 		void bind_socket(void);
 		void start_listening(void);

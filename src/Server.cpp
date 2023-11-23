@@ -33,12 +33,17 @@ Server::~Server(void)
 
 void Server::setAddrInfo(void)
 {
-	getaddrinfo(MY_DOMAIN, this->port, NULL, &this->addr);
+	getaddrinfo(MY_DOMAIN, this->port.c_str(), NULL, &this->addr);
 }
 
 int	Server::getSocket(void)
 {
 	return (this->_socket);
+}
+
+std::string	Server::getPort(void)
+{
+	return (this->port);
 }
 
 void Server::create_socket(void)
@@ -70,6 +75,7 @@ void Server::start_listening(void)
         close(this->_socket);
         exit(1);
     }
+    std::cout << "Server is listening on port " << this->getPort() << std::endl;
 }
 
 int Server::accept_conn(void)
@@ -308,8 +314,6 @@ void Server::polling(void)
 					this->conn[existingConns].fd = accept_conn();
 					this->conn[existingConns].events = POLLIN;
 					existingConns++;
-					
-					std::cout << "New connection accepted: "<<std::endl;
 				}
 				//if not listener then its just a regular client
 				else
@@ -317,7 +321,6 @@ void Server::polling(void)
 					if (readMsg(conn[i].fd) == 0)
 					{
 						close(conn[i].fd);
-						printf("Client Disconnected\n");
 						conn[i] = conn[existingConns - 1];
 						existingConns--;
 					}
