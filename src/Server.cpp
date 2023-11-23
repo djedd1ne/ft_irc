@@ -92,7 +92,8 @@ std::vector<std::string> Server::parseMsg(std::string msg)
 {
 	std::vector<std::string> res;	
 	size_t pos = 0;
-	
+	if (msg.find("\r\n"))
+		msg.replace(msg.find("\r\n"), 2, " ");
 	while (pos < msg.size())
 	{
 		pos = msg.find(" ");
@@ -116,38 +117,8 @@ std::string Server::getMsg(int socket)
 
 void Server::handleCommand(std::vector<std::string> cmd, int socket, int clientIndex)
 {
-	if(clients[clientIndex]->isRegistered() == false)
-	{
-		if(cmd[0] == "CAP" && clients[clientIndex]->wasCapSent() == false)
-			clients[clientIndex]->capSent();
-		if (clients[clientIndex]->wasCapSent() == true)
-		{
-			if (cmd[0] == "PASS")
-			{
-				printf("cmd[1] is : -%s-\n", cmd[1].c_str());
-				printf("password -%s-\n", password.c_str());
-				if (cmd[1] == password+"\n")
-				{
-					printf("yes\n");
-					send(socket, "password is correct", strlen("password is correct"), 0);
-					clients[clientIndex]->passSent();
-				}
-			}
-			if (clients[clientIndex]->wasPassSent() == true && cmd[0] == "NICK")
-			{
-				clients[clientIndex]->setNick(cmd[1]);
-				clients[clientIndex]->nickSent();
-			}
-			if (clients[clientIndex]->wasPassSent() == true && cmd[0] == "USER")
-			{
-				clients[clientIndex]->setUsername(cmd[1]);
-				clients[clientIndex]->userSent();
-				send(socket, ":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n", strlen(":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \r\n"), 0);
-				clients[clientIndex]->registerUser();
-			}
-		}
-				
-	}
+	if(!clients[clientIndex]->isRegistered())
+		capLsCmd(cmd, socket, clientIndex);			
 	else if (clients[clientIndex]->isRegistered())
 	{
 		if(cmd[0] == "JOIN")
@@ -184,13 +155,42 @@ void Server::pingCmd(std::vector<std::string> cmd, int socket)
 	}
 }
 
-void Server::caplsCmd(std::vector<std::string> cmd, int socket)
+void Server::capLsCmd(std::vector<std::string> cmd, int socket, int clientIndex)
 {
-	if (cmd[0] == "CAP")
+	std::string msg;
+
+	if(cmd[0] == "CAP" && clients[clientIndex]->wasCapSent() == false)
 	{
-		int len;
-		(void)len;
-		(void)socket;
+		msg = ":0.0.0.0 NOTICE client: Please send USER, NICK and PASS to complete the "
+			"registration! \n ==> /quote NICK nick, /quote USER user and /quote PASS **** <==\r\n";
+		send(socket, msg.c_str(), msg.size(), 0);
+		clients[clientIndex]->capSent();
+		if (cmd[0] == "NICK")
+		{
+			clients[clientIndex]->setNick(cmd[1]);
+			clients[clientIndex]->nickSent();
+			std::cout<<"nick\n"<<std::endl;
+		}
+		if (cmd[0] == "USER")
+		{
+			clients[clientIndex]->setUsername(cmd[1]);
+			clients[clientIndex]->userSent();
+			std::cout<<"user\n"<<std::endl;
+		}
+	}
+	if (clients[clientIndex]->wasCapSent() == true)
+	{
+		if (cmd[0] == "PASS")
+		{
+			if (cmd[1] == password)
+			{
+				clients[clientIndex]->passSent();
+				clients[clientIndex]->registerUser();
+				msg = ":0.0.0.0 001 " + clients[clientIndex]->getNick() + ": Welcome to the server " +
+				clients[clientIndex]->getNick() + "\r\n";
+				send(socket, msg.c_str(), msg.size(), 0);
+			}
+		}
 	}
 }
 
@@ -282,14 +282,6 @@ int Server::readMsg(int socket)
 	return (0);
 }
 
-void Server::send_messages(int socket)
-{
-	int len;
-
-	len = send(socket, ":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \n", strlen(":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \n"), 0);
-	(void)len;
-}
-
 void Server::polling(void)
 {
 	int existingConns;
@@ -300,6 +292,9 @@ void Server::polling(void)
 
 	while(1)
 	{
+	//	std::cout<<"Server status: "<<std::endl;
+	//	for (int i = 0; i < existingConns; i++)
+	//		std::cout<<"poll ["<<i<<"]: "<<this->conn[i].fd<<std::endl;
 		pollc = poll(conn, existingConns, -1);
 		(void)pollc;
 		//iterate over conns

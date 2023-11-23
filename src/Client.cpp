@@ -48,7 +48,7 @@ int Client::acceptConnection(int &socket)
 		close(_socket);
 		exit(1);
     }
-	else
+//	else
 	{
         struct sockaddr_in *ptr = (struct sockaddr_in *)&clientAddr;
 		std::cout << "ACCEPTED :: "  << inet_ntoa(ptr->sin_addr)<<std::endl;
@@ -99,6 +99,16 @@ void Client::setNick(std::string nick)
 void Client::setUsername(std::string username)
 {
 	_username = username;
+}
+
+std::string Client::getNick(void)
+{
+	return (this->_nick);
+}
+
+std::string Client::getUsername(void)
+{
+	return (this->_username);
 }
 
 void Client::nickSent()

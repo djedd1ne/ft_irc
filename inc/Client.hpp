@@ -41,6 +41,8 @@ class Client
 		bool wasCapSent();
 		void setNick(std::string );
 		void setUsername(std::string );
+		std::string getNick(void);
+		std::string getUsername(void);
 		void nickSent();
 		void passSent();
 		void userSent();
