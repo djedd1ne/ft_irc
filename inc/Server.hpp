@@ -11,8 +11,10 @@
 #include <sys/types.h>
 #include <netdb.h>
 #include <stdio.h>
+#include <poll.h>
 
 #define MY_DOMAIN "0.0.0.0"
+#define CONNECTIONS 1000
 
 class Client;
 struct pollfd;
@@ -20,6 +22,7 @@ struct pollfd;
 class Server
 {
 	private:
+		struct pollfd conn[CONNECTIONS];
 		char *port;
 		std::string password;
 		int _socket;
@@ -40,6 +43,7 @@ class Server
 		size_t	findClient(int socket);
 		int accept_conn(void);
 		int readMsg(int );
+		void polling(void);
 		void handleCommand(std::vector<std::string>, int, int);
 		void privMsgCmd(std::vector<std::string> , int);
 		void pingCmd(std::vector<std::string> , int);
@@ -48,7 +52,6 @@ class Server
 		std::vector<std::string> parseMsg(std::string );
 		std::string getMsg(int socket);
 		void send_messages(int );
-		void registerClient(int );
 
 };
 

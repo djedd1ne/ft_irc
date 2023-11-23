@@ -12,11 +12,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <iostream>
-#include <sys/time.h>
-#include <vector>
-#include <poll.h>
-
-#define CONNECTIONS 10
 
 int main(int argc, char **argv)
 {
@@ -25,10 +20,7 @@ int main(int argc, char **argv)
 
 	Input		input(argc, argv);
 	Server		server(argv);
-	pollfd		conn[CONNECTIONS];
-	int			existingConns;
 
-	(void)conn;
 	input.parseInput();
 	server.setAddrInfo();
 
@@ -38,45 +30,6 @@ int main(int argc, char **argv)
     std::cout << "Server is listening on port " << input.getPort() << std::endl;
 
 	server.start_listening();
+	server.polling();
 
-	int pollc;
-	conn[0].fd = server.getSocket();
-	conn[0].events = POLLIN;
-	existingConns = 1;
-	while(1)
-	{
-		pollc = poll(conn, existingConns, -1);
-		(void)pollc;
-		//iterate over conns
-		for (int i = 0; i < existingConns; i++)
-		{
-			// if file descriptor is ready to read
-			if (conn[i].revents & POLLIN)
-			{
-				//if server is ready to read, handle new conn
-				if (conn[i].fd == server.getSocket())
-				{
-					conn[existingConns].fd = server.accept_conn();
-					server.registerClient(conn[existingConns].fd);
-					conn[existingConns].events = POLLIN;
-					existingConns++;
-					
-					std::cout << "New connection accepted: "<<std::endl;
-				}
-				//if not listener then its just a regular client
-				else
-				{
-					if (server.readMsg(conn[i].fd) == 0)
-					{
-						printf("close it \n");
-						close(conn[i].fd);
-						printf("before\n");
-						conn[i] = conn[existingConns - 1];
-						printf("after\n");
-						existingConns--;
-					}
-				}
-			}
-		}
-	}
 }

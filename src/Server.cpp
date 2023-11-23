@@ -74,31 +74,13 @@ void Server::start_listening(void)
 
 int Server::accept_conn(void)
 {
-	struct sockaddr_storage client;
-	memset(&client, 0, sizeof(sockaddr_storage));
-	socklen_t addrlen;
-	addrlen = sizeof(client);
-	
-	int clientSocket = accept(this->_socket, (sockaddr *)&client, &addrlen);
-    if (client.ss_family == AF_INET)
-	{
-        struct sockaddr_in *ptr = (struct sockaddr_in *)&client;
-		printf("client ip is: %s\n", inet_ntoa(ptr->sin_addr));
-	}
-	
+	Client *newClient = new Client();	
+	clients.push_back(newClient);
+	int clientSocket = newClient->acceptConnection(this->_socket);
 
-	if (clientSocket == -1) 
-	{
-		perror("Failed to accept incoming connection");
-		close(clientSocket);
-		exit(1);
-    }
-	else
-	{
-		std::cout << "ACCEPTED :: "  << std::endl;
-	}
 	return (clientSocket);
 }
+	
 
 std::vector<std::string> Server::parseMsg(std::string msg)
 {
@@ -255,6 +237,7 @@ void Server::joinCmd(std::vector<std::string> cmd, int socket)
 		(void)len;
 	}
 }
+
 size_t	Server::findClient(int socket)
 {
 	for (size_t i = 0; i < clients.size(); i++)
@@ -268,16 +251,29 @@ size_t	Server::findClient(int socket)
 int Server::readMsg(int socket)
 {
 	int clientIndex;
+	std::string msg;
 
 	clientIndex = findClient(socket);
-	command = parseMsg(getMsg(socket));
+	msg = getMsg(socket);
+	if (!msg.empty())
+		command = parseMsg(msg);
+	else
+	{
+		struct sockaddr_storage *client = clients[clientIndex]->getClientAddr();
+        struct sockaddr_in *ptr = (struct sockaddr_in *)&client;
+		std::cout << "DISCONNECT :: "  << inet_ntoa(ptr->sin_addr)<<std::endl;
+		return (0);
+	}
 	//debugging purposes
 	for (size_t i = 0; i < command.size(); i++)
 		printf("COMMAND [%ld]: %s\n", i, command[i].c_str());
 	// ---------------
 	if (!command.empty())
+	{
 		handleCommand(command, socket, clientIndex);
-	return (1);
+		return(1);
+	}
+	return (0);
 }
 
 void Server::send_messages(int socket)
@@ -287,9 +283,46 @@ void Server::send_messages(int socket)
 	len = send(socket, ":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \n", strlen(":0.0.0.0 001 ssergiu: Welcome to the server, ssergiu! \n"), 0);
 	(void)len;
 }
-	
-void Server::registerClient(int socket)
+
+void Server::polling(void)
 {
-	Client *newClient = new Client(socket);	
-	clients.push_back(newClient);
+	int existingConns;
+	int pollc;
+	this->conn[0].fd = getSocket();
+	this->conn[0].events = POLLIN;
+	existingConns = 1;
+
+	while(1)
+	{
+		pollc = poll(conn, existingConns, -1);
+		(void)pollc;
+		//iterate over conns
+		for (int i = 0; i < existingConns; i++)
+		{
+			// if file descriptor is ready to read
+			if (this->conn[i].revents & POLLIN)
+			{
+				//if server is ready to read, handle new conn
+				if (this->conn[i].fd == getSocket())
+				{
+					this->conn[existingConns].fd = accept_conn();
+					this->conn[existingConns].events = POLLIN;
+					existingConns++;
+					
+					std::cout << "New connection accepted: "<<std::endl;
+				}
+				//if not listener then its just a regular client
+				else
+				{
+					if (readMsg(conn[i].fd) == 0)
+					{
+						close(conn[i].fd);
+						printf("Client Disconnected\n");
+						conn[i] = conn[existingConns - 1];
+						existingConns--;
+					}
+				}
+			}
+		}
+	}
 }
