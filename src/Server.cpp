@@ -329,3 +329,12 @@ void Server::polling(void)
 		}
 	}
 }
+
+void Server::run(void)
+{
+	setAddrInfo();
+	create_socket();
+	bind_socket();
+	start_listening();
+	polling();
+}

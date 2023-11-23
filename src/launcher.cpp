@@ -13,10 +13,6 @@ int main(int argc, char **argv)
 	Server		server(argv);
 
 	input.parseInput();
-	server.setAddrInfo();
-	server.create_socket();
-	server.bind_socket();
-	server.start_listening();
-	server.polling();
+	server.run();
 
 }

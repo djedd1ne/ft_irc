@@ -53,6 +53,7 @@ class Server
 		std::vector<std::string> parseMsg(std::string );
 		std::string getMsg(int socket);
 		void send_messages(int );
+		void run(void);
 
 };
 
