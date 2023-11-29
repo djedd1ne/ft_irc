@@ -1,5 +1,6 @@
 
 #include "../inc/Client.hpp"
+#include <fcntl.h>
 
 // Constructors
 
@@ -48,10 +49,13 @@ int Client::acceptConnection(int &socket)
 		close(_socket);
 		exit(1);
     }
+	fcntl(_socket, F_SETFL, O_NONBLOCK);
 //	else
 	{
         struct sockaddr_in *ptr = (struct sockaddr_in *)&clientAddr;
 		std::cout << "ACCEPTED :: "  << inet_ntoa(ptr->sin_addr)<<std::endl;
+		_ip = inet_ntoa(ptr->sin_addr);
+
 	}
 	return (this->_socket);
 }
@@ -99,6 +103,11 @@ void Client::setNick(std::string nick)
 void Client::setUsername(std::string username)
 {
 	_username = username;
+} 
+
+std::string Client::getIp(void)
+{
+	return (this->_ip);
 }
 
 std::string Client::getNick(void)

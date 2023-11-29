@@ -122,7 +122,7 @@ void Server::handleCommand(std::vector<std::string> cmd, int socket, int clientI
 	else if (clients[clientIndex]->isRegistered())
 	{
 		if(cmd[0] == "JOIN")
-			joinCmd(cmd, socket);
+			joinCmd(cmd, socket, clientIndex);
 		else if(cmd[0] == "PING")
 			pingCmd(cmd, socket);
 		else if(cmd[0] == "PRIVMSG")
@@ -161,10 +161,13 @@ void Server::capLsCmd(std::vector<std::string> cmd, int socket, int clientIndex)
 
 	if(cmd[0] == "CAP" && clients[clientIndex]->wasCapSent() == false)
 	{
-		msg = ":0.0.0.0 NOTICE client: Please send USER, NICK and PASS to complete the "
-			"registration! \n ==> /quote NICK nick, /quote USER user and /quote PASS **** <==\r\n";
+		msg = ":SERVER NOTICE client: => Please send USER, NICK and PASS to complete the "
+			"registration! \r\n :SERVER NOTICE client: => /quote NICK nick, /quote USER user and /quote PASS **** <==\r\n";
 		send(socket, msg.c_str(), msg.size(), 0);
 		clients[clientIndex]->capSent();
+	}
+	else if (clients[clientIndex]->wasCapSent() == true)
+	{
 		if (cmd[0] == "NICK")
 		{
 			clients[clientIndex]->setNick(cmd[1]);
@@ -177,32 +180,30 @@ void Server::capLsCmd(std::vector<std::string> cmd, int socket, int clientIndex)
 			clients[clientIndex]->userSent();
 			std::cout<<"user\n"<<std::endl;
 		}
-	}
-	if (clients[clientIndex]->wasCapSent() == true)
-	{
 		if (cmd[0] == "PASS")
 		{
 			if (cmd[1] == password)
 			{
 				clients[clientIndex]->passSent();
 				clients[clientIndex]->registerUser();
-				msg = ":0.0.0.0 001 " + clients[clientIndex]->getNick() + ": Welcome to the server " +
-				clients[clientIndex]->getNick() + "\r\n";
+				msg = ":127.0.0.1 001 " + clients[clientIndex]->getNick() + ": Welcome to the server " +
+				clients[clientIndex]->getNick() + "@" + clients[clientIndex]->getIp() + "!\r\n";
 				send(socket, msg.c_str(), msg.size(), 0);
 			}
 		}
 	}
 }
 
-void Server::joinCmd(std::vector<std::string> cmd, int socket)
+void Server::joinCmd(std::vector<std::string> cmd, int socket, int clientIndex)
 {
 	if (cmd[0] == "JOIN")
 	{
 		int total = 0;
-		std::string msg = ":ssergiu!ssergiu@0.0.0.0 JOIN :" + cmd[1] + "\r\n";
+		std::string msg = ":" + clients[clientIndex]->getNick() + "!" + clients[clientIndex]->getNick() + "@" + clients[clientIndex]->getIp() + " JOIN :" + cmd[1] + "\r\n";
 		int left = msg.length();
 		int len;
 
+		std::cout<<msg<<std::endl;
 		while (total < (int)msg.length())
 		{
 			len = send(socket, msg.c_str() + total, left, 0);
@@ -211,7 +212,8 @@ void Server::joinCmd(std::vector<std::string> cmd, int socket)
 		}
 
 		total = 0;
-		msg = ":0.0.0.0 332 ssergiu" + cmd[1] + ":something\r\n";
+		msg = ":127.0.0.1 332 " + clients[clientIndex]->getNick() + " " + cmd[1] + " :something\r\n";
+		std::cout<<msg<<std::endl;
 		left = msg.length();
 		while (total < (int)msg.length())
 		{
@@ -221,7 +223,8 @@ void Server::joinCmd(std::vector<std::string> cmd, int socket)
 		}
 
 		total = 0;
-		msg = ":0.0.0.0 353 ssergiu = " + cmd[1] + ":@ssergiu, djmekki, doreshev, azer\r\n";
+		msg = ":127.0.0.1 353 " + clients[clientIndex]->getNick() + " = " + cmd[1] + " :@ssergiu\r\n";
+		std::cout<<msg<<std::endl;
 		left = msg.length();
 		while (total < (int)msg.length())
 		{
@@ -231,7 +234,8 @@ void Server::joinCmd(std::vector<std::string> cmd, int socket)
 		}
 
 		total = 0;
-		msg = ":0.0.0.0 366 ssergiu " + cmd[1] + ":End of NAMES list\r\n";
+		msg = ":127.0.0.1 366 " + clients[clientIndex]->getNick() + " " + cmd[1] + " :End of NAMES list\r\n";
+		std::cout<<msg<<std::endl;
 		left = msg.length();
 		while (total < (int)msg.length())
 		{
@@ -239,7 +243,6 @@ void Server::joinCmd(std::vector<std::string> cmd, int socket)
 			total += len;
 			left -= len;
 		}
-		//len = send(socket, "JOIN #can :ssergiu\n", strlen("JOIN #can\n"), 0);
 		(void)len;
 	}
 }

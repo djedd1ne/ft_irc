@@ -49,7 +49,7 @@ class Server
 		void privMsgCmd(std::vector<std::string> , int);
 		void pingCmd(std::vector<std::string> , int);
 		void capLsCmd(std::vector<std::string> , int, int);
-		void joinCmd(std::vector<std::string> , int);
+		void joinCmd(std::vector<std::string> , int, int);
 		std::vector<std::string> parseMsg(std::string );
 		std::string getMsg(int socket);
 		void run(void);

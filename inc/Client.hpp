@@ -32,6 +32,7 @@ class Client
 		~Client(void);
 		void setSocket(int &sock);
 		int getSocket(void);
+		std::string getIp(void);
 		struct sockaddr_storage *getClientAddr(void);
 		int acceptConnection(int &);
 		bool isRegistered();
