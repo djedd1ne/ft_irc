@@ -1,10 +1,17 @@
 
 #include "../inc/Server.hpp"
+#include "../inc/Input.hpp"
+#include "../inc/Client.hpp"
+#include <cstring>
+#include <cerrno>
+#include <arpa/inet.h>
 
 // Constructors
 
-Server::Server(void)
+Server::Server(char **string)
 {
+	this->port = string[1];
+	this->password = string[2];
 }
 
 Server::Server(const Server &src)
@@ -24,64 +31,308 @@ Server::~Server(void)
 
 // Functions
 
-int	Server::create_socket(void)
+void Server::setAddrInfo(void)
 {
-    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+	getaddrinfo(MY_DOMAIN, this->port.c_str(), NULL, &this->addr);
+}
 
-    if (socket_fd == -1) 
+int	Server::getSocket(void)
+{
+	return (this->_socket);
+}
+
+std::string	Server::getPort(void)
+{
+	return (this->port);
+}
+
+void Server::create_socket(void)
+{
+    this->_socket = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (this->_socket == -1) 
 	{
         perror("Failed to create socket");
-        return (-1);
+        exit(1);
     }
-	return (socket_fd);
 }
 
-void Server::bind_socket(int socket, addrinfo **test)
+void Server::bind_socket(void)
 {
-    if (bind(socket, (*test)->ai_addr, (*test)->ai_addrlen))
+    if (bind(this->_socket, this->addr->ai_addr, this->addr->ai_addrlen))
 	{
         perror("Failed to bind socket");
-        close(socket);
+        close(this->_socket);
         exit(1);
     }
 }
 
-void Server::start_listening(int socket)
+void Server::start_listening(void)
 {
-    if (listen(socket, SOMAXCONN) == -1) 
+    if (listen(this->_socket, SOMAXCONN) == -1) 
 	{
         perror("Failed to listen for connections");
-        close(socket);
+        close(this->_socket);
         exit(1);
     }
+    std::cout << "Server is listening on port " << this->getPort() << std::endl;
 }
 
-int Server::accept_conn(int socket, addrinfo **test)
+int Server::accept_conn(void)
 {
-	int clientSocket = accept(socket, (*test)->ai_addr, &(*test)->ai_addrlen);
+	Client *newClient = new Client();	
+	clients.push_back(newClient);
+	int clientSocket = newClient->acceptConnection(this->_socket);
 
-	if (clientSocket == -1) 
-	{
-		perror("Failed to accept incoming connection");
-		close(clientSocket);
-		exit(1);
-    }
-	else
-	{
-		std::cout << "ACCEPTED :: "  << std::endl;
-	}
 	return (clientSocket);
 }
+	
 
-void Server::read_messages(int socket)
+std::vector<std::string> Server::parseMsg(std::string msg)
+{
+	std::vector<std::string> res;	
+	size_t pos = 0;
+	if (msg.find("\r\n"))
+		msg.replace(msg.find("\r\n"), 2, " ");
+	while (pos < msg.size())
+	{
+		pos = msg.find(" ");
+		res.push_back(msg.substr(0, pos));
+		msg.erase(0, pos + 1);
+	}
+	return res;
+}
+
+std::string Server::getMsg(int socket)
 {
 	char *buffer;
-	int len;
+	std::string msg("");
 
-	buffer = (char *)malloc(sizeof(char) * 10);
-	len = recv(socket, buffer, 10, 0);
-	printf("buffer: %s\n", buffer);
-	printf("len: %d\n", len);
-	buffer[9] = 0;
-	write(1, buffer, 10);
+	buffer = (char *)malloc(sizeof(char) * 256);
+	bzero(buffer, 256);
+	recv(socket, buffer, 255, 0);
+	msg = buffer;
+	return (msg);
+}
+
+void Server::handleCommand(std::vector<std::string> cmd, int socket, int clientIndex)
+{
+	if(!clients[clientIndex]->isRegistered())
+		capLsCmd(cmd, socket, clientIndex);			
+	else if (clients[clientIndex]->isRegistered())
+	{
+		if(cmd[0] == "JOIN")
+			joinCmd(cmd, socket, clientIndex);
+		else if(cmd[0] == "PING")
+			pingCmd(cmd, socket);
+		else if(cmd[0] == "PRIVMSG")
+			privMsgCmd(cmd, socket);
+	}
+	else
+		send(socket, "Please register first!", strlen("Please register first!"), 0);
+		
+}
+
+void Server::privMsgCmd(std::vector<std::string> cmd, int socket)
+{
+	if (cmd[0] == "PRIVMSG")
+	{
+		int len;
+
+		len = send(socket, ":ssergiu PRIVMSG #can :test!\r\n", strlen(":ssergiu PRIVMSG #can :test!\r\n"), 0);
+		(void)len;
+	}
+}
+
+void Server::pingCmd(std::vector<std::string> cmd, int socket)
+{
+	if (cmd[0] == "PING")
+	{
+		int len;
+
+		len = send(socket, "PONG\n", strlen("PONG\n"), 0);
+		(void)len;
+	}
+}
+
+void Server::capLsCmd(std::vector<std::string> cmd, int socket, int clientIndex)
+{
+	std::string msg;
+
+	if(cmd[0] == "CAP" && clients[clientIndex]->wasCapSent() == false)
+	{
+		msg = ":SERVER NOTICE client: => Please send USER, NICK and PASS to complete the "
+			"registration! \r\n :SERVER NOTICE client: => /quote NICK nick, /quote USER user and /quote PASS **** <==\r\n";
+		send(socket, msg.c_str(), msg.size(), 0);
+		clients[clientIndex]->capSent();
+	}
+	else if (clients[clientIndex]->wasCapSent() == true)
+	{
+		if (cmd[0] == "NICK")
+		{
+			clients[clientIndex]->setNick(cmd[1]);
+			clients[clientIndex]->nickSent();
+			std::cout<<"nick\n"<<std::endl;
+		}
+		if (cmd[0] == "USER")
+		{
+			clients[clientIndex]->setUsername(cmd[1]);
+			clients[clientIndex]->userSent();
+			std::cout<<"user\n"<<std::endl;
+		}
+		if (cmd[0] == "PASS")
+		{
+			if (cmd[1] == password)
+			{
+				clients[clientIndex]->passSent();
+				clients[clientIndex]->registerUser();
+				msg = ":127.0.0.1 001 " + clients[clientIndex]->getNick() + ": Welcome to the server " +
+				clients[clientIndex]->getNick() + "@" + clients[clientIndex]->getIp() + "!\r\n";
+				send(socket, msg.c_str(), msg.size(), 0);
+			}
+		}
+	}
+}
+
+void Server::joinCmd(std::vector<std::string> cmd, int socket, int clientIndex)
+{
+	if (cmd[0] == "JOIN")
+	{
+		int total = 0;
+		std::string msg = ":" + clients[clientIndex]->getNick() + "!" + clients[clientIndex]->getNick() + "@" + clients[clientIndex]->getIp() + " JOIN :" + cmd[1] + "\r\n";
+		int left = msg.length();
+		int len;
+
+		std::cout<<msg<<std::endl;
+		while (total < (int)msg.length())
+		{
+			len = send(socket, msg.c_str() + total, left, 0);
+			total += len;
+			left -= len;
+		}
+
+		total = 0;
+		msg = ":127.0.0.1 332 " + clients[clientIndex]->getNick() + " " + cmd[1] + " :something\r\n";
+		std::cout<<msg<<std::endl;
+		left = msg.length();
+		while (total < (int)msg.length())
+		{
+			len = send(socket, msg.c_str() + total, left, 0);
+			total += len;
+			left -= len;
+		}
+
+		total = 0;
+		msg = ":127.0.0.1 353 " + clients[clientIndex]->getNick() + " = " + cmd[1] + " :@ssergiu\r\n";
+		std::cout<<msg<<std::endl;
+		left = msg.length();
+		while (total < (int)msg.length())
+		{
+			len = send(socket, msg.c_str() + total, left, 0);
+			total += len;
+			left -= len;
+		}
+
+		total = 0;
+		msg = ":127.0.0.1 366 " + clients[clientIndex]->getNick() + " " + cmd[1] + " :End of NAMES list\r\n";
+		std::cout<<msg<<std::endl;
+		left = msg.length();
+		while (total < (int)msg.length())
+		{
+			len = send(socket, msg.c_str() + total, left, 0);
+			total += len;
+			left -= len;
+		}
+		(void)len;
+	}
+}
+
+size_t	Server::findClient(int socket)
+{
+	for (size_t i = 0; i < clients.size(); i++)
+	{
+		if (clients[i]->getSocket() == socket)
+			return (i);
+	}
+	return (0);
+}
+
+int Server::readMsg(int socket)
+{
+	int clientIndex;
+	std::string msg;
+
+	clientIndex = findClient(socket);
+	msg = getMsg(socket);
+	if (!msg.empty())
+		command = parseMsg(msg);
+	else
+	{
+		struct sockaddr_storage *client = clients[clientIndex]->getClientAddr();
+        struct sockaddr_in *ptr = (struct sockaddr_in *)&client;
+		std::cout << "DISCONNECT :: "  << inet_ntoa(ptr->sin_addr)<<std::endl;
+		return (0);
+	}
+	//debugging purposes
+	for (size_t i = 0; i < command.size(); i++)
+		printf("COMMAND [%ld]: %s\n", i, command[i].c_str());
+	// ---------------
+	if (!command.empty())
+	{
+		handleCommand(command, socket, clientIndex);
+		return(1);
+	}
+	return (0);
+}
+
+void Server::polling(void)
+{
+	int existingConns;
+	int pollc;
+	this->conn[0].fd = getSocket();
+	this->conn[0].events = POLLIN;
+	existingConns = 1;
+
+	while(1)
+	{
+	//	std::cout<<"Server status: "<<std::endl;
+	//	for (int i = 0; i < existingConns; i++)
+	//		std::cout<<"poll ["<<i<<"]: "<<this->conn[i].fd<<std::endl;
+		pollc = poll(conn, existingConns, -1);
+		(void)pollc;
+		//iterate over conns
+		for (int i = 0; i < existingConns; i++)
+		{
+			// if file descriptor is ready to read
+			if (this->conn[i].revents & POLLIN)
+			{
+				//if server is ready to read, handle new conn
+				if (this->conn[i].fd == getSocket())
+				{
+					this->conn[existingConns].fd = accept_conn();
+					this->conn[existingConns].events = POLLIN;
+					existingConns++;
+				}
+				//if not listener then its just a regular client
+				else
+				{
+					if (readMsg(conn[i].fd) == 0)
+					{
+						close(conn[i].fd);
+						conn[i] = conn[existingConns - 1];
+						existingConns--;
+					}
+				}
+			}
+		}
+	}
+}
+
+void Server::run(void)
+{
+	setAddrInfo();
+	create_socket();
+	bind_socket();
+	start_listening();
+	polling();
 }
