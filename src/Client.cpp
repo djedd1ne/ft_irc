@@ -1,5 +1,6 @@
 
 #include "../inc/Client.hpp"
+#include "../inc/Channel.hpp"
 #include <fcntl.h>
 
 // Constructors
@@ -34,6 +35,13 @@ Client::~Client(void)
 }
 
 // Functions
+
+void Client::addChannel(Channel *channel)
+{
+	std::cout<<"added channel -"<<channel->getName()<<std::endl;
+	userChannels.push_back(channel);
+	std::cout<<"channel test: "<<userChannels[0]->getName()<<std::endl;
+}
 
 void Client::setSocket(int &sock)
 {
@@ -118,6 +126,11 @@ std::string Client::getNick(void)
 std::string Client::getUsername(void)
 {
 	return (this->_username);
+}
+
+Channel* Client::getChannel(void)
+{
+	return (this->userChannels[0]);
 }
 
 void Client::nickSent()
