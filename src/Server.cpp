@@ -2,6 +2,7 @@
 #include "../inc/Server.hpp"
 #include "../inc/Input.hpp"
 #include "../inc/Client.hpp"
+#include "../inc/Channel.hpp"
 #include <cstring>
 #include <cerrno>
 #include <arpa/inet.h>
@@ -69,7 +70,7 @@ void Server::bind_socket(void)
 
 void Server::start_listening(void)
 {
-    if (listen(this->_socket, SOMAXCONN) == -1) 
+    if (listen(this->_socket, 10) == -1) 
 	{
         perror("Failed to listen for connections");
         close(this->_socket);
@@ -162,7 +163,7 @@ void Server::capLsCmd(std::vector<std::string> cmd, int socket, int clientIndex)
 	if(cmd[0] == "CAP" && clients[clientIndex]->wasCapSent() == false)
 	{
 		msg = ":SERVER NOTICE client: => Please send USER, NICK and PASS to complete the "
-			"registration! \r\n :SERVER NOTICE client: => /quote NICK nick, /quote USER user and /quote PASS **** <==\r\n";
+			"registration! \r\n : => /quote NICK nick, /quote USER user and /quote PASS **** <==\r\n";
 		send(socket, msg.c_str(), msg.size(), 0);
 		clients[clientIndex]->capSent();
 	}
@@ -194,57 +195,69 @@ void Server::capLsCmd(std::vector<std::string> cmd, int socket, int clientIndex)
 	}
 }
 
+int Server::getChanIndex(std::string &chan)
+{
+	for (size_t i=0; i < channelList.size(); i++)
+		if (channelList[i]->getName() == chan)
+			return (i);
+	return (-1);
+}
+
+Channel* Server::createChannel(std::string &chan)
+{
+	Channel *newChannel = new Channel(chan);	
+	channelList.push_back(newChannel);
+	return (newChannel);
+}
+void Server::execJoin(std::vector<std::string> cmd, int socket, int clientIndex)
+{
+		int len;
+		std::string msg = ":" + clients[clientIndex]->getNick() + " JOIN :" + cmd[1] + "\r\n";
+
+		std::cout<<msg<<std::endl;
+		len = send(socket, msg.c_str(), msg.size(), 0);
+		
+		msg = ":127.0.0.1 332 " + clients[clientIndex]->getNick() + " " + cmd[1] + " :something\r\n";
+		std::cout<<msg<<std::endl;
+		//len = send(socket, msg.c_str(), msg.size(), 0);
+		msg = ":127.0.0.1 353 " + clients[clientIndex]->getNick() + " = " + cmd[1] + " :";
+		for (size_t j = 0; j < channelList[0]->getUserList().size(); j++)
+		{
+			std::cout<<"usr in chan: "<<channelList[0]->getUserList()[j]->getNick()<<std::endl;
+			msg = msg + channelList[0]->getUserList()[j]->getNick() + " ";
+		}
+		msg += "\r\n";
+		std::cout<<msg<<std::endl;
+		len = send(socket, msg.c_str(), msg.size(), 0);
+
+		msg = cmd[1] + " :End of /NAMES list\r\n";
+		std::cout<<msg<<std::endl;
+		len = send(socket, msg.c_str(), msg.size(), 0);
+		(void)len;
+}
+
 void Server::joinCmd(std::vector<std::string> cmd, int socket, int clientIndex)
 {
 	if (cmd[0] == "JOIN")
 	{
-		int total = 0;
-		std::string msg = ":" + clients[clientIndex]->getNick() + "!" + clients[clientIndex]->getNick() + "@" + clients[clientIndex]->getIp() + " JOIN :" + cmd[1] + "\r\n";
-		int left = msg.length();
-		int len;
-
-		std::cout<<msg<<std::endl;
-		while (total < (int)msg.length())
+		Channel *chan;
+		int chanIndex = getChanIndex(cmd[1]);
+		std::cout<<"chan index: "<<chanIndex<<std::endl;
+		if (chanIndex == -1)
 		{
-			len = send(socket, msg.c_str() + total, left, 0);
-			total += len;
-			left -= len;
+			// if channel does not exist
+			chan = createChannel(cmd[1]);
+			clients[clientIndex]->addChannel(chan);
+			channelList[getChanIndex(cmd[1])]->addUser(clients[clientIndex]);
+			execJoin(cmd,socket,clientIndex);
 		}
-
-		total = 0;
-		msg = ":127.0.0.1 332 " + clients[clientIndex]->getNick() + " " + cmd[1] + " :something\r\n";
-		std::cout<<msg<<std::endl;
-		left = msg.length();
-		while (total < (int)msg.length())
+		else
 		{
-			len = send(socket, msg.c_str() + total, left, 0);
-			total += len;
-			left -= len;
+			channelList[getChanIndex(cmd[1])]->addUser(clients[clientIndex]);
+			execJoin(cmd,socket,clientIndex);
 		}
-
-		total = 0;
-		msg = ":127.0.0.1 353 " + clients[clientIndex]->getNick() + " = " + cmd[1] + " :@ssergiu\r\n";
-		std::cout<<msg<<std::endl;
-		left = msg.length();
-		while (total < (int)msg.length())
-		{
-			len = send(socket, msg.c_str() + total, left, 0);
-			total += len;
-			left -= len;
-		}
-
-		total = 0;
-		msg = ":127.0.0.1 366 " + clients[clientIndex]->getNick() + " " + cmd[1] + " :End of NAMES list\r\n";
-		std::cout<<msg<<std::endl;
-		left = msg.length();
-		while (total < (int)msg.length())
-		{
-			len = send(socket, msg.c_str() + total, left, 0);
-			total += len;
-			left -= len;
-		}
-		(void)len;
 	}
+debug_stats();
 }
 
 size_t	Server::findClient(int socket)
@@ -273,10 +286,6 @@ int Server::readMsg(int socket)
 		std::cout << "DISCONNECT :: "  << inet_ntoa(ptr->sin_addr)<<std::endl;
 		return (0);
 	}
-	//debugging purposes
-	for (size_t i = 0; i < command.size(); i++)
-		printf("COMMAND [%ld]: %s\n", i, command[i].c_str());
-	// ---------------
 	if (!command.empty())
 	{
 		handleCommand(command, socket, clientIndex);
@@ -295,9 +304,6 @@ void Server::polling(void)
 
 	while(1)
 	{
-	//	std::cout<<"Server status: "<<std::endl;
-	//	for (int i = 0; i < existingConns; i++)
-	//		std::cout<<"poll ["<<i<<"]: "<<this->conn[i].fd<<std::endl;
 		pollc = poll(conn, existingConns, -1);
 		(void)pollc;
 		//iterate over conns
@@ -327,6 +333,42 @@ void Server::polling(void)
 		}
 	}
 }
+
+void Server::debug_stats(void)
+{
+	if (DEBUG & 1)
+	{
+		std::cout<<"DEBUG MODE ON"<<std::endl;
+		if (!command.empty())
+		{
+			for (size_t i = 0; i < command.size(); i++)
+			{
+				std::cout<<"CMD["<<i;
+				std::cout<<"]: "<<command[i]<<std::endl;
+			}
+		}
+		if (!clients.empty())
+		{
+			for (size_t i = 0; i < clients.size(); i++)
+			{
+				std::cout<<"client["<<i;
+				std::cout<<"]: "<<clients[i]->getNick()<<std::endl;
+			}
+		}
+		if (!channelList.empty())
+		{
+			for (size_t i = 0; i < channelList.size(); i++)
+			{
+				std::cout<<"chan["<<i;
+				std::cout<<"]: "<<channelList[i]->getName()<<std::endl;
+				for (size_t j = 0; j < channelList[i]->getUserList().size(); j++)
+					std::cout<<"usr in chan: "<<channelList[0]->getUserList()[j]->getNick()<<std::endl;
+			}
+
+		}
+	}
+}
+
 
 void Server::run(void)
 {

@@ -7,7 +7,10 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <iostream>
+#include <vector>
 #include <arpa/inet.h>
+
+class Channel;
 
 class Client
 {
@@ -15,6 +18,7 @@ class Client
 		int _socket;
 		std::string _nick;
 		//array of channels
+		std::vector <Channel *> userChannels;
 		struct sockaddr_storage *clientAddr;
 		socklen_t clientAddrLen;
 		std::string _username;
@@ -34,6 +38,7 @@ class Client
 		int getSocket(void);
 		std::string getIp(void);
 		struct sockaddr_storage *getClientAddr(void);
+		void addChannel(Channel *channel);
 		int acceptConnection(int &);
 		bool isRegistered();
 		void registerUser();
@@ -44,6 +49,7 @@ class Client
 		void setUsername(std::string );
 		std::string getNick(void);
 		std::string getUsername(void);
+		Channel* getChannel(void);
 		void nickSent();
 		void passSent();
 		void userSent();

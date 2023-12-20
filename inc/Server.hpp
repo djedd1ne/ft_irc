@@ -15,8 +15,10 @@
 
 #define MY_DOMAIN "0.0.0.0"
 #define CONNECTIONS 1000
+#define DEBUG 1
 
 class Client;
+class Channel;
 struct pollfd;
 
 class Server
@@ -27,6 +29,7 @@ class Server
 		std::string password;
 		int _socket;
 		addrinfo *addr;
+		std::vector <Channel *> channelList;
 		std::vector <Client *> clients;
 		std::vector <std::string> command;
 		Server(void);
@@ -45,14 +48,18 @@ class Server
 		int accept_conn(void);
 		int readMsg(int );
 		void polling(void);
+		Channel* createChannel(std::string &chan);
 		void handleCommand(std::vector<std::string>, int, int);
 		void privMsgCmd(std::vector<std::string> , int);
 		void pingCmd(std::vector<std::string> , int);
 		void capLsCmd(std::vector<std::string> , int, int);
 		void joinCmd(std::vector<std::string> , int, int);
+		void execJoin(std::vector<std::string> cmd, int socket, int clientIndex);
 		std::vector<std::string> parseMsg(std::string );
 		std::string getMsg(int socket);
+		int getChanIndex(std::string &);
 		void run(void);
+		void debug_stats(void);
 
 };
 
