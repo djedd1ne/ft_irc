@@ -7,6 +7,13 @@
 Channel::Channel(std::string &channelName) 
 {
 	this->name = channelName;
+	this->topic = "";
+	this->limit = "";
+	this->password = "";
+	this->mode_i = false;
+	this->mode_t = false;
+	this->mode_l = false;
+	this->mode_k = false;
 }
 
 Channel::Channel(const Channel &src)

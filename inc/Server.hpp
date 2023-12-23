@@ -13,6 +13,11 @@
 #include <stdio.h>
 #include <poll.h>
 
+#include <cctype>
+#include <algorithm>
+#include <sstream>
+
+
 #define MY_DOMAIN "0.0.0.0"
 #define CONNECTIONS 1000
 #define DEBUG 1
@@ -50,16 +55,30 @@ class Server
 		void polling(void);
 		Channel* createChannel(std::string &chan);
 		void handleCommand(std::vector<std::string>, int, int);
-		void privMsgCmd(std::vector<std::string> , int);
+		void privMsgCmd(std::vector<std::string> , int clientIndex);
 		void pingCmd(std::vector<std::string> , int);
 		void capLsCmd(std::vector<std::string> , int, int);
 		void joinCmd(std::vector<std::string> , int, int);
-		void execJoin(std::vector<std::string> cmd, int socket, int clientIndex);
+		void execJoin(std::vector<std::string> cmd,int ind_chan, int socket, int clientIndex);
 		std::vector<std::string> parseMsg(std::string );
 		std::string getMsg(int socket);
-		int getChanIndex(std::string &);
 		void run(void);
 		void debug_stats(void);
+		int getChanIndex(std::string &);
+		////////////////////////////////////// -- Adding this --  ////////////////////////////////////
+		void remove_spaces(std::string& str);
+		int srch_admin_users(std::string nickname,std::vector <Channel *>,int ind);
+		int searchByNickName(const std::string& target, int numClients);
+		void sendUser(const std::string& msg, int clientSocket);
+		void ft_topic(int clientIndex, int socket);
+		std::string extract_Topic_ssg(int ind);
+		void ft_invite(int clinetIndex);
+		std::string get_modes(int ind);
+		void ft_mode(int clientIndex);
+		int	srch_is_operator(std::string nickname,const int clientSocket,int ind);
+		int srch_clnt_chan(const int clientSocket,int ind);
+		int check_is_invited(std::string nickname, int ind_chan);
+
 
 };
 

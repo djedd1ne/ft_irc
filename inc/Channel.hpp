@@ -12,8 +12,16 @@ class Channel
 	private:
 		std::string name;
 		std::string topic;
-		std::vector <Client *> userList;
 	public:
+		std::vector <Client *> userList;
+		std::vector<Client *> admins_users;
+		std::vector <std::string> invited;
+		std::string limit;
+		std::string password;
+		bool mode_i;
+   		bool mode_t;
+    	bool mode_l;
+    	bool mode_k;
 		Channel(std::string &); 
 		Channel(int &);
 		Channel(const Channel&);

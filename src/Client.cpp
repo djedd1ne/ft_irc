@@ -39,7 +39,7 @@ Client::~Client(void)
 void Client::addChannel(Channel *channel)
 {
 	std::cout<<"added channel -"<<channel->getName()<<std::endl;
-	userChannels.push_back(channel);
+	//userChannels.push_back(channel);
 	std::cout<<"channel test: "<<userChannels[0]->getName()<<std::endl;
 }
 
