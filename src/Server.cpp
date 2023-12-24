@@ -178,7 +178,7 @@ void Server::ft_part(int clientIndex)
 	else
 	{
 		sendUser(":[" + clients[clientIndex]->getNick() + "] PART " + command[1] + command[2] + " :" + command[3], clients[clientIndex]->getSocket());
-		channelList[ind_chan].removeUser(command[2]);
+		channelList[ind_chan]->removeUser(command[2]);
 	}
 }
 
@@ -192,7 +192,7 @@ void Server::ft_kick(int clientIndex)
 	else
 	{
 		sendUser(":[" + clients[clientIndex]->getNick() + "] KICK " + command[1] + command[2] + " :" + command[3], clients[clientIndex]->getSocket());
-		channelList[ind_chan].removeUser(command[2]);
+		channelList[ind_chan]->removeUser(command[2]);
 	}
 }
 

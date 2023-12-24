@@ -31,6 +31,7 @@ class Channel
 		std::string getTopic(void);
 		void setTopic(std::string &);
 		std::vector <Client *> getUserList(void);
+		void removeUser(std::string name);
 		void addUser(Client *);
 };
 
