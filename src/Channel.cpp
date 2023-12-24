@@ -57,3 +57,12 @@ void Channel::setTopic(std::string &newTopic)
 {
 	this->topic = newTopic;
 }
+
+void Channel::removeUser(std::string name)
+{
+	{
+		for (size_t i = 0; i < userList.size(); i++)	
+			if (userList[i]->getNick() == name)
+				userList.erase(userList.begin() + i);
+	}
+}

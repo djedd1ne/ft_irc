@@ -73,6 +73,7 @@ class Server
 		void ft_topic(int clientIndex, int socket);
 		std::string extract_Topic_ssg(int ind);
 		void ft_invite(int clinetIndex);
+		void ft_kick(int clientIndex);
 		std::string get_modes(int ind);
 		void ft_mode(int clientIndex);
 		int	srch_is_operator(std::string nickname,const int clientSocket,int ind);
