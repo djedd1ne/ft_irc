@@ -4,10 +4,16 @@
 
 // Constructors
 
-Channel::Channel(std::string &channelName, Client *clientName)
+Channel::Channel(std::string &channelName) 
 {
 	this->name = channelName;
-	this->userList.push_back(clientName);
+	this->topic = "";
+	this->limit = "";
+	this->password = "";
+	this->mode_i = false;
+	this->mode_t = false;
+	this->mode_l = false;
+	this->mode_k = false;
 }
 
 Channel::Channel(const Channel &src)
@@ -26,3 +32,37 @@ Channel::~Channel(void)
 }
 
 // Functions
+
+std::vector <Client *> Channel::getUserList(void)
+{
+	return (this->userList);
+}
+
+std::string Channel::getName(void)
+{
+	return (this->name);
+}
+
+void Channel::addUser(Client *user)
+{
+	userList.push_back(user);
+}
+
+std::string Channel::getTopic(void)
+{
+	return (this->topic);
+}
+
+void Channel::setTopic(std::string &newTopic)
+{
+	this->topic = newTopic;
+}
+
+void Channel::removeUser(std::string name)
+{
+	{
+		for (size_t i = 0; i < userList.size(); i++)	
+			if (userList[i]->getNick() == name)
+				userList.erase(userList.begin() + i);
+	}
+}
