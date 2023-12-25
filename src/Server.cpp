@@ -6,6 +6,7 @@
 #include <cstring>
 #include <cerrno>
 #include <arpa/inet.h>
+#include <netinet/tcp.h>
 
 // Constructors
 
@@ -50,6 +51,7 @@ std::string	Server::getPort(void)
 void Server::create_socket(void)
 {
 	this->_socket = socket(AF_INET, SOCK_STREAM, 0);
+	setsockopt(this->_socket, SOL_TCP, TCP_ULP, "tls", sizeof("tls"));
 
 	if (this->_socket == -1) 
 	{
@@ -517,13 +519,14 @@ void Server::joinCmd(std::vector<std::string> cmd, int socket, int clientIndex)
 {
 	if (cmd[0] == "JOIN")
 	{
-		//Channel *chan;
+		Channel *chan;
 		int chanIndex = getChanIndex(cmd[1]);
 		std::cout<<"----------------------chan index: "<< chanIndex <<std::endl;
 		if (chanIndex == -1)
 		{
-			//chan = createChannel(cmd[1]);
+			chan = createChannel(cmd[1]);
 			channelList[getChanIndex(cmd[1])]->admins_users.push_back(clients[clientIndex]);
+			(void)chan;
 		}
 		channelList[getChanIndex(cmd[1])]->addUser(clients[clientIndex]);
 		execJoin(cmd,getChanIndex(cmd[1]),socket,clientIndex);
@@ -549,6 +552,7 @@ int Server::readMsg(int socket)
 
 	clientIndex = findClient(socket);
 	msg = getMsg(socket);
+	printf("message: %s\n", msg.c_str());
 	if (!msg.empty())
 		command = parseMsg(msg);
 	else
