@@ -30,6 +30,7 @@ Server Server::operator= (const Server &src)
 
 Server::~Server(void)
 {
+	std::cout << "IRC server is shutting down ..." << std::endl;
 }
 
 // Functions
