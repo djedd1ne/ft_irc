@@ -56,9 +56,9 @@ void Input::parseInput(void)
 		std::cerr << "Port our of range, pick between 1024 and 9000!" << std::endl;
 		exit(1);
 	}
-	if (this->password.size() > 13)
+	if (this->password.size() > 13 || this->password.size() < 4)
 	{
-		std::cerr << "Password exceedes a total number of 13 characters!" << std::endl;
+		std::cerr << "Password must be between 4 and 13 characters!" << std::endl;
 		exit(1);
 	}
 }
