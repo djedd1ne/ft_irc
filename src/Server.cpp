@@ -14,6 +14,7 @@ Server::Server(char **string)
 {
 	this->port = string[1];
 	this->password = string[2];
+	std::cout << "IRC server is running ..." << std::endl;
 }
 
 Server::Server(const Server &src)
@@ -51,7 +52,7 @@ std::string	Server::getPort(void)
 void Server::create_socket(void)
 {
 	this->_socket = socket(AF_INET, SOCK_STREAM, 0);
-	setsockopt(this->_socket, SOL_TCP, TCP_ULP, "tls", sizeof("tls"));
+	//setsockopt(this->_socket, SOL_TCP, TCP_ULP, "tls", sizeof("tls"));
 
 	if (this->_socket == -1) 
 	{

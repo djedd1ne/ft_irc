@@ -158,7 +158,7 @@ bool Client::wasPassSent()
 	return (_passSent);
 }
 
-bool Client::wasUSerSent()
+bool Client::wasUserSent()
 {
 	return (_usrSent);
 }

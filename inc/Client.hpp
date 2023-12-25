@@ -55,7 +55,7 @@ class Client
 		void userSent();
 		bool wasNickSent();
 		bool wasPassSent();
-		bool wasUSerSent();
+		bool wasUserSent();
 };
 
 #endif
